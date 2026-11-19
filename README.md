@@ -6,7 +6,9 @@
 
 [![Track A](https://img.shields.io/badge/STAT%20563-Track%20A%20Empirical-B5121B?style=flat-square)](#)
 [![Data: FRED-MD](https://img.shields.io/badge/Data-FRED--MD%20(k%3D6)-102A43?style=flat-square)](https://www.stlouisfed.org/research/economists/mccracken/fred-databases)
-[![GitHub Pages](https://img.shields.io/badge/Project%20Site-docs%2Findex.html-15803D?style=flat-square)](docs/index.html)
+[![GitHub Pages](https://img.shields.io/badge/Live%20Site-GitHub%20Pages-15803D?style=flat-square)](https://esrasekerci.github.io/stat563-ai-labor-shock/)
+
+**Live Project Website:** https://esrasekerci.github.io/stat563-ai-labor-shock/
 
 ---
 
@@ -94,19 +96,12 @@ You can also open `docs/index.html` directly in your browser.
 
 ## Deploying to GitHub Pages
 
-1. Initialize and push this repository to GitHub:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: STAT 563 Track A repository and GitHub Pages site"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/<your-repo>.git
-   git push -u origin main
-   ```
-2. In your GitHub repository, go to **Settings → Pages**.
-3. Under **Build and deployment → Source**, select **Deploy from a branch**.
-4. Choose branch **`main`** and folder **`/docs`**, then click **Save**.
-5. Your site will be live at `https://<your-username>.github.io/<your-repo>/`.
+This repository is deployed via **GitHub Pages** from branch `main` and folder `/docs`:
+
+- **Repository:** https://github.com/esrasekerci/stat563-ai-labor-shock
+- **Live Site:** https://esrasekerci.github.io/stat563-ai-labor-shock/
+
+Any push to `main` (via GitHub Desktop or CLI) automatically updates the live site.
 
 ---
 
