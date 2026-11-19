@@ -1,0 +1,8 @@
+"Variable","DetSpec","ADF_lag","ADF_stat","ADF_sig","Phi_stat","Phi_sig5","PP_stat","PP_sig","ERS_stat","ERS_sig","KPSS_stat","KPSS_sig","ZA_stat","ZA_sig","ZA_break","Verdict"
+"FEDFUNDS (level)","drift",13,-0.603,"",0.68,"N",-0.492,"",-1.266,"",1.01,"***",-2.634,"","2020-02-01","I(1) Nonstationary"
+"log(M2SL)","trend",13,-1.39,"",1.07,"N",-1.381,"",-2.11,"",0.445,"***",-4.067,"","2020-02-01","I(1) Nonstationary"
+"BAA10YM (level)","drift",13,-2.479,"",3.08,"N",-2.356,"",-2.336,"**",1.362,"***",-3.433,"","2016-09-01","Nonstationary (Weak Evidence)"
+"log(INDPRO)","trend",13,-3.058,"",4.83,"N",-3.102,"",-1.526,"",0.388,"***",-4.821,"*","2020-02-01","I(1) Nonstationary"
+"HWI (level)","trend",13,-1.798,"",1.79,"N",-2.213,"",-2.9,"*",0.222,"***",-4.499,"","2019-10-01","I(1) Nonstationary"
+"log(HWI)","trend",13,-2.375,"",2.82,"N",-2.995,"",-3.03,"**",0.145,"*",-3.97,"","2019-10-01","Weakly Stationary / Near-UR"
+"log(PAYEMS)","trend",13,-3.176,"*",5.05,"N",-3.036,"",-2.175,"",0.364,"***",-34.951,"***","2020-03-01","I(1) Nonstationary"

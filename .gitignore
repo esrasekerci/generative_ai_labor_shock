@@ -17,6 +17,7 @@ env/
 .Rhistory
 .RData
 .Rproj.user/
+Rplots.pdf
 
 # Local literature PDFs, course guidelines & Overleaf drafts (kept out of GitHub)
 papers/

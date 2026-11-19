@@ -1,0 +1,5 @@
+"Target","Mean_Error","HAC_SE","t_ratio","p_value","RMSE_Unc","RMSE_Cond"
+"Job Openings (HWI) [Unconditional]",-76.1374,29.7879,-2.556,0.01404,347.1605,347.1605
+"Job Openings (HWI) [Conditional on Policy]",-186.2686,32.5131,-5.729,7.871e-07,347.1605,387.9458
+"Nonfarm Payrolls (PAYEMS) [Unconditional]",-0.0888,0.0213,-4.161,0.0001409,0.2464,0.2464
+"Nonfarm Payrolls (PAYEMS) [Conditional on Policy]",0.0056,0.0665,0.085,0.9329,0.2464,0.5858
