@@ -1,0 +1,23 @@
+# Core data & scientific computing
+numpy>=1.26
+pandas>=2.2
+scipy>=1.12
+python-dateutil>=2.9
+
+# Classical multivariate time series & econometrics
+statsmodels>=0.14
+arch>=7.0
+
+# Visualization
+matplotlib>=3.8
+seaborn>=0.13
+plotly>=5.20
+
+# Deep learning (TFT / LSTM)
+torch>=2.2
+pytorch-lightning>=2.2
+pytorch-forecasting>=1.0
+
+# Pretrained time-series foundation models (Chronos / TimesFM)
+transformers>=4.40
+chronos-forecasting>=1.2

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STAT 563 — Isolating the Generative AI Labor Shock via Multivariate Conditional Forecasting</title>
+  <meta name="description" content="METU STAT 563 Track A Empirical Project by Eda Kal Arıca & Esra Şekerci: Comparing Bayesian VARs, Deep Learning (TFT/LSTM), and Zero-Shot Foundation Models on FRED-MD macroeconomic data." />
+
+  <!-- Editorial Academic Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- KaTeX for publication-quality equations -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Plotly.js for interactive macroeconomic figures -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="top-accent-bar"></div>
+
+  <!-- Sticky Header Navigation -->
+  <header class="site-nav">
+    <div class="site-nav-inner">
+      <a class="nav-brand" href="#top">
+        <span class="nav-brand-badge">STAT 563</span>
+        <span>METU · Multivariate Time Series</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#motivation">Motivation</a></li>
+        <li><a href="#data">Dataset</a></li>
+        <li><a href="#explorer">Data Explorer</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#references">References</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn btn-outline" href="#cite">BibTeX</a>
+        <a class="btn btn-primary" href="#explorer">Explore Data</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero / Academic Masthead -->
+  <section class="hero" id="top">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-pill inst">Middle East Technical University · Dept. of Statistics</span>
+        <span class="eyebrow-pill track">Track A · Empirical Term Project</span>
+        <span>STAT 563 · Multivariate Time Series Analysis</span>
+      </div>
+
+      <h1 class="hero-title">
+        Isolating the Generative AI Labor Shock from Monetary Tightening
+      </h1>
+
+      <p class="hero-subtitle">
+        A multivariate conditional forecasting comparison of Classical Bayesian VARs, Deep Learning (TFT/LSTM), and Zero-Shot Time-Series Foundation Models on U.S. macro-financial data (2010–2026).
+      </p>
+
+      <div class="byline-row">
+        <div class="authors-block">
+          <div>
+            <span class="meta-item-label">Authors</span>
+            <span class="meta-item-value">Eda Kal Arıca &amp; Esra Şekerci</span>
+          </div>
+          <div>
+            <span class="meta-item-label">Proposal Date</span>
+            <span class="meta-item-value">November 15, 2026</span>
+          </div>
+          <div>
+            <span class="meta-item-label">Data Source</span>
+            <span class="meta-item-value">FRED-MD (St. Louis Fed)</span>
+          </div>
+          <div>
+            <span class="meta-item-label">Implementation</span>
+            <span class="meta-item-value">Python &amp; R</span>
+          </div>
+        </div>
+        <div class="hero-cta-group">
+          <a class="btn btn-crimson" href="#explorer">Interactive Figures</a>
+          <a class="btn btn-outline" href="https://www.stlouisfed.org/research/economists/mccracken/fred-databases" target="_blank" rel="noopener">FRED-MD Source ↗</a>
+        </div>
+      </div>
+
+      <!-- Key Study Dimensions -->
+      <div class="kpi-strip">
+        <div class="kpi-card">
+          <div class="kpi-label">System Dimension</div>
+          <div class="kpi-value" id="kpi-k">k = 6</div>
+          <div class="kpi-sub">Coupled macro-financial series</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Monthly Sample</div>
+          <div class="kpi-value" id="kpi-total">T = 201</div>
+          <div class="kpi-sub" id="kpi-span">Jan 2010 – Sep 2026 (202 target)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Training Window</div>
+          <div class="kpi-value" id="kpi-train">T<sub>train</sub> = 154</div>
+          <div class="kpi-sub">Jan 2010 – Oct 2022 (Pre-AI)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Evaluation Window</div>
+          <div class="kpi-value" id="kpi-test">T<sub>test</sub> = 47</div>
+          <div class="kpi-sub" id="kpi-test-sub">Nov 2022 – Sep 2026 (48 target)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Model Families</div>
+          <div class="kpi-value">4 Models</div>
+          <div class="kpi-sub">VAR · BVAR · TFT/LSTM · Chronos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Two-Column Editorial Layout -->
+  <div class="page-layout">
+    <!-- Sticky Sidebar TOC -->
+    <aside class="toc-sidebar" aria-label="Table of Contents">
+      <div class="toc-heading">Contents</div>
+      <ul class="toc-list" id="toc-list">
+        <li><a href="#motivation">1. Research Motive</a></li>
+        <li><a href="#data">2. Data &amp; Transmission System</a></li>
+        <li><a href="#explorer">3. Interactive Data Explorer</a></li>
+        <li><a href="#methodology">4. Econometric &amp; ML Models</a></li>
+        <li><a href="#roadmap">5. Hypotheses &amp; Results Roadmap</a></li>
+        <li><a href="#references">6. References &amp; Citation</a></li>
+      </ul>
+
+      <div class="toc-note">
+        <strong>Live Data Pipeline</strong>
+        All charts and tables on this page are compiled directly from <code>fred_data.csv</code> via <code>src/data/prepare_web_data.py</code>.
+      </div>
+    </aside>
+
+    <!-- Main Article Content -->
+    <main class="article-content">
+
+      <!-- SECTION 1: MOTIVATION -->
+      <section class="article-section" id="motivation">
+        <div class="section-kicker">Section 01</div>
+        <h2>Research Question &amp; Identification Challenge</h2>
+
+        <div class="rq-callout">
+          <div class="rq-label">Central Research Question</div>
+          <p class="rq-text">
+            “Does the systematic forecast error in U.S. employment (<code>PAYEMS</code>) and job openings (<code>HWI</code>) post-2022 reveal a structural break attributable to the generative AI shock, and how do classical Bayesian VARs compare to modern deep learning and zero-shot foundation models in isolating this effect?”
+          </p>
+        </div>
+
+        <p>
+          The public release of generative AI in late 2022 coincided directly with the Federal Reserve’s aggressive monetary tightening cycle. This temporal overlap creates a severe macroeconomic identification challenge: separating potential <strong>technological labor displacement</strong> from <strong>policy-induced economic cooling</strong>.
+        </p>
+
+        <p>
+          Standard dummy-variable regressions cannot disentangle simultaneous shocks that propagate through credit markets and aggregate demand with distinct lags. Instead, a <strong>multivariate conditional forecasting framework</strong> (Waggoner &amp; Zha, 1999; Bańbura, Giannone, &amp; Lenza, 2015; Crump et al., 2021; Caldara et al., 2023) is essential to hold the realized post-2022 trajectory of monetary policy and financial conditions fixed and examine whether labor demand still exhibits a systematic, unexplained shortfall.
+        </p>
+
+        <div class="pillar-grid">
+          <div class="pillar-card">
+            <h4>Post-Pandemic Nonlinearities</h4>
+            <p>
+              Recent literature documents pronounced nonlinearities and structural shifts across post-pandemic labor and price dynamics (Eksi &amp; Tas, 2022; Debortoli et al., 2023; Korobilis, 2025), motivating tests beyond linear reduced-form baselines.
+            </p>
+          </div>
+          <div class="pillar-card">
+            <h4>Vacancies vs. Payrolls</h4>
+            <p>
+              Tracking job openings (<code>HWI</code>) alongside total nonfarm payrolls (<code>PAYEMS</code>) distinguishes forward-looking matching shocks and hiring freezes from lagging headcount reductions (Pater, 2017).
+            </p>
+          </div>
+          <div class="pillar-card">
+            <h4>Classical vs. Learning-Based</h4>
+            <p>
+              Benchmarking shrinkage Bayesian VARs (Primiceri, 2005; Sznajderska &amp; Haug, 2023) against deep learning and zero-shot foundation models (Ansari et al., 2024) tests whether data-driven architectures filter macro-financial noise more cleanly without rigid parametric assumptions.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: DATA & TRANSMISSION -->
+      <section class="article-section" id="data">
+        <div class="section-kicker">Section 02</div>
+        <h2>Dataset &amp; Macro-Financial Transmission System</h2>
+
+        <p>
+          We draw \(k = 6\) monthly macroeconomic and financial series from the <strong>Federal Reserve Economic Data — Monthly Database (FRED-MD)</strong> maintained by the Federal Reserve Bank of St. Louis (McCracken &amp; Ng, 2016). Rather than independent univariate processes, these six variables form a tightly coupled macro-financial transmission system.
+        </p>
+
+        <!-- Custom SVG Schematic of Macro-Financial Transmission -->
+        <div class="schematic-card">
+          <div class="schematic-title">Figure 0 · Structural Identification &amp; Conditional Forecasting Schematic</div>
+          <svg class="schematic-svg" viewBox="0 0 880 285" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Macro-financial transmission mechanism from monetary policy to labor markets with exogenous Generative AI shock">
+            <defs>
+              <marker id="arrow-navy" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#102A43"/>
+              </marker>
+              <marker id="arrow-crimson" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#B5121B"/>
+              </marker>
+            </defs>
+
+            <!-- Conditioning Block Group -->
+            <rect x="12" y="18" width="388" height="248" rx="10" fill="#F0F4F8" stroke="#CBD5E1" stroke-width="1.2"/>
+            <text x="28" y="42" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#102A43" letter-spacing="0.06em">CONDITIONING BLOCK (FIXED POST-2022)</text>
+
+            <!-- FEDFUNDS -->
+            <rect x="28" y="64" width="160" height="72" rx="8" fill="#FFFFFF" stroke="#102A43" stroke-width="1.5"/>
+            <text x="42" y="88" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#B5121B">FEDFUNDS</text>
+            <text x="42" y="107" font-family="Source Sans 3, sans-serif" font-size="12" fill="#434E5E">Effective Fed Funds Rate</text>
+            <text x="42" y="124" font-family="Source Sans 3, sans-serif" font-size="11" fill="#6B7787">Monetary Policy (% p.a.)</text>
+
+            <!-- M2SL -->
+            <rect x="28" y="160" width="160" height="72" rx="8" fill="#FFFFFF" stroke="#102A43" stroke-width="1.5"/>
+            <text x="42" y="184" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#6D28D9">M2SL</text>
+            <text x="42" y="203" font-family="Source Sans 3, sans-serif" font-size="12" fill="#434E5E">M2 Money Stock</text>
+            <text x="42" y="220" font-family="Source Sans 3, sans-serif" font-size="11" fill="#6B7787">Broad Liquidity ($B)</text>
+
+            <!-- BAA10YM -->
+            <rect x="226" y="112" width="158" height="78" rx="8" fill="#FFFFFF" stroke="#102A43" stroke-width="1.5"/>
+            <text x="240" y="137" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#7C2D12">BAA10YM</text>
+            <text x="240" y="156" font-family="Source Sans 3, sans-serif" font-size="12" fill="#434E5E">Baa − 10Y Spread</text>
+            <text x="240" y="173" font-family="Source Sans 3, sans-serif" font-size="11" fill="#6B7787">Credit Stress (% p.a.)</text>
+
+            <!-- Arrows inside conditioning block -->
+            <path d="M 188 100 L 222 136" stroke="#102A43" stroke-width="1.6" fill="none" marker-end="url(#arrow-navy)"/>
+            <path d="M 188 196 L 222 166" stroke="#102A43" stroke-width="1.6" fill="none" marker-end="url(#arrow-navy)"/>
+
+            <!-- INDPRO (Real Activity Bridge) -->
+            <rect x="434" y="112" width="146" height="78" rx="8" fill="#FFFFFF" stroke="#434E5E" stroke-width="1.5"/>
+            <text x="448" y="137" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#1D4E89">INDPRO</text>
+            <text x="448" y="156" font-family="Source Sans 3, sans-serif" font-size="12" fill="#434E5E">Industrial Output</text>
+            <text x="448" y="173" font-family="Source Sans 3, sans-serif" font-size="11" fill="#6B7787">Real Activity (2017=100)</text>
+
+            <path d="M 384 151 L 430 151" stroke="#102A43" stroke-width="1.8" fill="none" marker-end="url(#arrow-navy)"/>
+            <text x="394" y="141" font-family="Source Sans 3, sans-serif" font-size="10.5" font-weight="600" fill="#434E5E">lag</text>
+
+            <!-- Labor Market Target Block -->
+            <rect x="614" y="76" width="252" height="190" rx="10" fill="#FDF2F2" stroke="#F5C6CB" stroke-width="1.2"/>
+            <text x="628" y="99" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#B5121B" letter-spacing="0.06em">LABOR TARGETS (FORECAST ERRORS)</text>
+
+            <!-- HWI -->
+            <rect x="630" y="114" width="220" height="58" rx="8" fill="#FFFFFF" stroke="#15803D" stroke-width="1.6"/>
+            <text x="644" y="136" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#15803D">HWI (Job Openings)</text>
+            <text x="644" y="156" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="#434E5E">Leading margin · Vacancy freezes first</text>
+
+            <!-- PAYEMS -->
+            <rect x="630" y="194" width="220" height="58" rx="8" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
+            <text x="644" y="216" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="#D97706">PAYEMS (Payrolls)</text>
+            <text x="644" y="236" font-family="Source Sans 3, sans-serif" font-size="11.5" fill="#434E5E">Lagging margin · Aggregate headcount</text>
+
+            <!-- Transmission arrows into labor block -->
+            <path d="M 580 144 L 626 144" stroke="#102A43" stroke-width="1.8" fill="none" marker-end="url(#arrow-navy)"/>
+            <path d="M 580 162 L 626 216" stroke="#102A43" stroke-width="1.4" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow-navy)"/>
+            <path d="M 740 172 L 740 190" stroke="#102A43" stroke-width="1.6" fill="none" marker-end="url(#arrow-navy)"/>
+
+            <!-- Exogenous Generative AI Shock Box -->
+            <rect x="614" y="12" width="252" height="44" rx="8" fill="#B5121B"/>
+            <text x="740" y="31" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#FFFFFF">EXOGENOUS GEN-AI SHOCK (NOV 2022+)</text>
+            <text x="740" y="47" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="11" fill="#FEE2E2">Captured by unexplained negative error eₜ</text>
+
+            <!-- Dashed Crimson Shock Arrow -->
+            <path d="M 740 56 L 740 110" stroke="#B5121B" stroke-width="2" stroke-dasharray="5 3" fill="none" marker-end="url(#arrow-crimson)"/>
+          </svg>
+          <div class="figure-caption">
+            <strong>Transmission Mechanism:</strong> Tightening in <code>FEDFUNDS</code> and <code>M2SL</code> widens corporate credit spreads (<code>BAA10YM</code>), depressing industrial production (<code>INDPRO</code>) with a lag. Firms respond first by freezing job openings (<code>HWI</code>) before cutting net payrolls (<code>PAYEMS</code>) (Pater, 2017; Caldara et al., 2023). Fixing the post-2022 path of the conditioning block isolates endogenous policy cooling from any exogenous generative AI structural break.
+          </div>
+        </div>
+
+        <h3>Series Specification &amp; Empirical Summary Statistics</h3>
+        <p>
+          The table below summarizes all six series extracted directly from <code>fred_data.csv</code> (January 2010 onward), along with McCracken &amp; Ng (2016) stationary transformation codes (<code>tcode</code>) and sample means across the pre-AI training regime (Jan 2010 – Oct 2022) and the post-2022 evaluation regime (Nov 2022 onward).
+        </p>
+
+        <div class="table-wrap">
+          <table class="academic-table" id="series-summary-table">
+            <thead>
+              <tr>
+                <th>Series</th>
+                <th>Description &amp; Units</th>
+                <th>System Role</th>
+                <th>FRED-MD Transform</th>
+                <th class="num">Mean (Full)</th>
+                <th class="num">SD (Full)</th>
+                <th class="num">Pre-AI Mean</th>
+                <th class="num">Post-AI Mean</th>
+              </tr>
+            </thead>
+            <tbody id="series-table-body">
+              <!-- Populated dynamically from fred_macro.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note-box">
+          <strong>Reproducibility &amp; Data Snapshot Notes</strong>
+          <ul id="data-notes-list">
+            <li><code>BAA10YM</code> is constructed directly from FRED-MD columns as <code>BAA − GS10</code> (Moody’s Seasoned Baa Corporate Bond Yield minus 10-Year Treasury Constant Maturity), with zero missing observations.</li>
+            <li>The local <code>fred_data.csv</code> snapshot currently extends through <strong>September 2026</strong> (\(T = 201\) monthly observations from Jan 2010; \(T_{\text{train}} = 154\), \(T_{\text{test}} = 47\)), one month ahead of the proposal’s October 2026 target (\(T = 202\), \(T_{\text{test}} = 48\)). <code>HWI</code> has one trailing release lag (<code>2026-09-01</code>). Dropping an updated FRED-MD CSV into the repository and re-running <code>python3 src/data/prepare_web_data.py</code> refreshes every figure and metric automatically.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- SECTION 3: INTERACTIVE DATA EXPLORER -->
+      <section class="article-section" id="explorer">
+        <div class="section-kicker">Section 03</div>
+        <h2>Interactive Empirical Data Explorer</h2>
+        <p>
+          Inspect the multivariate co-movement of the six U.S. macro-financial series, compare raw levels against FRED-MD stationary transformations, and examine how cross-series correlations shifted between the pre-2022 training window and the post-AI tightening era.
+        </p>
+
+        <!-- FIGURE 1: MULTIVARIATE CO-MOVEMENT -->
+        <div class="figure-card">
+          <div class="figure-header">
+            <div class="figure-title-group">
+              <h3>Figure 1 · Multivariate Co-Movement &amp; Post-2022 Divergence</h3>
+              <p class="figure-subtitle">Interactive counterpart to the proposal figure with shaded COVID-19 outlier (2020) and Post-AI &amp; Tightening (Nov 2022+) regimes.</p>
+            </div>
+          </div>
+
+          <div class="control-bar">
+            <div class="segmented-control" id="fig1-scale-controls" role="group" aria-label="Scale mode">
+              <button class="seg-btn active" data-scale="zscore">Standardized (Z-Score)</button>
+              <button class="seg-btn" data-scale="indexed">Indexed (Oct 2022 = 100)</button>
+            </div>
+            <div class="segmented-control" id="fig1-range-controls" role="group" aria-label="Time window">
+              <button class="seg-btn active" data-range="full">Full (2010–2026)</button>
+              <button class="seg-btn" data-range="covid">COVID Shock (2019–2022)</button>
+              <button class="seg-btn" data-range="postai">Post-AI Era (2022–2026)</button>
+            </div>
+            <div class="segmented-control" id="fig1-subset-controls" role="group" aria-label="Series preset">
+              <button class="seg-btn active" data-subset="all">All 6 Series</button>
+              <button class="seg-btn" data-subset="labor">Labor vs. Policy Rate</button>
+              <button class="seg-btn" data-subset="cond">Conditioning Block</button>
+            </div>
+          </div>
+
+          <div id="plot-comovement" class="plot-container tall"></div>
+
+          <div class="insight-banner" id="fig1-insight">
+            <strong>Key Observation:</strong> Between October 2022 and August 2026, total nonfarm payrolls (<code>PAYEMS</code>) expanded by <strong>+3.3%</strong> (153.9M → 159.0M), while job openings (<code>HWI</code>) contracted by <strong>−32.2%</strong> (10,447 → 7,079) even as credit spreads (<code>BAA10YM</code>) compressed below their pre-2022 mean. Switch to <em>Indexed (Oct 2022 = 100)</em> to inspect this divergence directly.
+          </div>
+        </div>
+
+        <!-- FIGURE 2: INDIVIDUAL SERIES INSPECTOR -->
+        <div class="figure-card">
+          <div class="figure-header">
+            <div class="figure-title-group">
+              <h3>Figure 2 · Series Level &amp; FRED-MD Stationary Transformation</h3>
+              <p class="figure-subtitle">Select any variable to inspect its raw trajectory alongside its McCracken &amp; Ng (2016) stationary input to the VAR/BVAR and deep learning pipeline.</p>
+            </div>
+          </div>
+
+          <div class="series-pills" id="fig2-series-pills" role="group" aria-label="Select series">
+            <!-- Populated dynamically -->
+          </div>
+
+          <div class="mini-kpi-row" id="fig2-kpis">
+            <!-- Populated dynamically -->
+          </div>
+
+          <div id="plot-series-detail" class="plot-container tall"></div>
+        </div>
+
+        <!-- FIGURE 3: CROSS-CORRELATION MATRIX -->
+        <div class="figure-card">
+          <div class="figure-header">
+            <div class="figure-title-group">
+              <h3>Figure 3 · Cross-Series Dependence &amp; Regime Shift Heatmap</h3>
+              <p class="figure-subtitle">Empirical Pearson cross-correlations confirming joint multivariate dependence—and revealing a sharp post-2022 decoupling of job openings.</p>
+            </div>
+          </div>
+
+          <div class="control-bar">
+            <div class="segmented-control" id="fig3-corr-controls" role="group" aria-label="Correlation matrix mode">
+              <button class="seg-btn active" data-mode="preAITransformed">Pre-AI Transforms (2010–2022)</button>
+              <button class="seg-btn" data-mode="postAITransformed">Post-AI Transforms (2022–2026)</button>
+              <button class="seg-btn" data-mode="transformed">Full Transforms (2010–2026)</button>
+              <button class="seg-btn" data-mode="levels">Raw Levels (2010–2026)</button>
+            </div>
+          </div>
+
+          <div id="plot-correlation" class="plot-container heatmap"></div>
+
+          <div class="insight-banner" id="fig3-insight">
+            <!-- Updated dynamically per mode -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: METHODOLOGY -->
+      <section class="article-section" id="methodology">
+        <div class="section-kicker">Section 04</div>
+        <h2>Econometric &amp; Learning-Based Methodology</h2>
+
+        <p>
+          Let \(\mathbf{y}_t = \bigl(\text{FEDFUNDS}_t,\, \text{M2SL}_t,\, \text{BAA10YM}_t,\, \text{INDPRO}_t,\, \text{HWI}_t,\, \text{PAYEMS}_t\bigr)^\top \in \mathbb{R}^6\) denote the six-dimensional multivariate system observed monthly over \(t = 1, \dots, T\). All models are estimated exclusively on the pre-generative-AI training sample (January 2010 – October 2022, \(T_{\text{train}} = 154\)) and evaluated over the post-2022 horizon (\(h = 1, \dots, T_{\text{test}}\)).
+        </p>
+
+        <div class="math-card">
+          <div class="math-card-label">Reduced-Form VAR(p) &amp; Conditional Forecast-Error Decomposition</div>
+          <p style="margin-bottom: 0.7rem;">
+            $$\mathbf{y}_t = \mathbf{c} + \sum_{\ell=1}^{p} \mathbf{A}_\ell \mathbf{y}_{t-\ell} + \boldsymbol{\varepsilon}_t, \qquad \boldsymbol{\varepsilon}_t \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma}), \qquad \boldsymbol{\Sigma} = \mathbf{P}\mathbf{P}^\top$$
+          </p>
+          <p style="margin: 0;">
+            Partitioning the system into conditioning policy/financial variables \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\) and target labor outcomes \(i \in \{\text{PAYEMS}, \text{HWI}\}\), we construct conditional forecasts \(\hat{y}_{i, T_{\text{train}}+h \mid T_{\text{train}}, \mathbf{y}^{\mathcal{C}}}\) following Waggoner &amp; Zha (1999) and define the systematic post-2022 conditional forecast error as:
+            $$e_{i, T_{\text{train}}+h} = y_{i, T_{\text{train}}+h} - \hat{y}_{i, T_{\text{train}}+h \mid T_{\text{train}},\, \mathbf{y}^{\mathcal{C}}_{T_{\text{train}}+1:T_{\text{train}}+h}}$$
+          </p>
+        </div>
+
+        <p>
+          If monetary tightening and financial conditions alone account for post-2022 labor deceleration, \(e_{i, T_{\text{train}}+h}\) should remain statistically centered around zero within posterior credible bands. A persistent, systematic negative error in <code>HWI</code> (and/or <code>PAYEMS</code>) points toward an unmodeled structural break consistent with generative AI adoption.
+        </p>
+
+        <h3>Four Planned Model Architectures</h3>
+        <div class="model-grid">
+          <!-- Model 1 -->
+          <div class="model-card">
+            <div class="model-card-header">
+              <span class="model-tag classical">Classical · 3.1.1</span>
+              <span class="status-pill planned">Baseline</span>
+            </div>
+            <h4>Unrestricted VAR(\(p\))</h4>
+            <p>
+              Stationary multivariate baseline estimated on FRED-MD transformed series, establishing the linear benchmark for dynamic cross-correlations and unconditional multi-step forecasts.
+            </p>
+            <ul class="model-specs">
+              <li><strong>Lag Selection:</strong> Bayesian Information Criterion (BIC)</li>
+              <li><strong>Inputs:</strong> Stationary FRED-MD transformations (\(k = 6\))</li>
+              <li><strong>Role:</strong> Benchmark against shrinkage &amp; non-linear models</li>
+            </ul>
+          </div>
+
+          <!-- Model 2 -->
+          <div class="model-card">
+            <div class="model-card-header">
+              <span class="model-tag classical">Classical · 3.1.2</span>
+              <span class="status-pill planned">Core Structural</span>
+            </div>
+            <h4>Bayesian VAR (Minnesota Priors)</h4>
+            <p>
+              Large-scale Bayesian VAR with Minnesota shrinkage priors to mitigate over-parameterization, paired with Cholesky structural identification and Waggoner–Zha conditional forecasting.
+            </p>
+            <ul class="model-specs">
+              <li><strong>Identification:</strong> Cholesky IRFs verifying monetary transmission</li>
+              <li><strong>Conditioning:</strong> Fixed post-2022 <code>FEDFUNDS</code>, <code>M2SL</code>, <code>BAA10YM</code></li>
+              <li><strong>Output:</strong> Posterior conditional bands &amp; \(e_{i,t}\) for <code>PAYEMS</code>, <code>HWI</code></li>
+            </ul>
+          </div>
+
+          <!-- Model 3 -->
+          <div class="model-card">
+            <div class="model-card-header">
+              <span class="model-tag learning">Learning-Based · 3.2.1</span>
+              <span class="status-pill planned">Self-Trained</span>
+            </div>
+            <h4>Temporal Fusion Transformer (TFT) / LSTM</h4>
+            <p>
+              Deep sequence architecture trained strictly on pre-2022 multivariate histories, ingesting post-2022 monetary and financial series as known future covariates to test non-linear conditional transmission.
+            </p>
+            <ul class="model-specs">
+              <li><strong>Known Future Covariates:</strong> <code>FEDFUNDS</code>, <code>M2SL</code>, <code>BAA10YM</code></li>
+              <li><strong>Tuning:</strong> Hidden layers, learning rate, dropout via time-series CV</li>
+              <li><strong>Goal:</strong> Capture nonlinear covariate interactions missed by linear VARs</li>
+            </ul>
+          </div>
+
+          <!-- Model 4 -->
+          <div class="model-card">
+            <div class="model-card-header">
+              <span class="model-tag learning">Learning-Based · 3.2.2</span>
+              <span class="status-pill planned">Zero-Shot</span>
+            </div>
+            <h4>Zero-Shot Foundation Model (Chronos / TimesFM)</h4>
+            <p>
+              Pretrained time-series foundation model (e.g., Chronos, Ansari et al., 2024, or TimesFM) prompted directly with the pre-2022 trajectory zero-shot without dataset-specific parameter estimation.
+            </p>
+            <ul class="model-specs">
+              <li><strong>Regime:</strong> Strict zero-shot inference from pre-2022 context</li>
+              <li><strong>Evaluation:</strong> Probabilistic quantile trajectories post-2022</li>
+              <li><strong>Goal:</strong> Benchmark innate structural-break sensitivity vs. BVAR</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: HYPOTHESES & ROADMAP -->
+      <section class="article-section" id="roadmap">
+        <div class="section-kicker">Section 05</div>
+        <h2>Expected Findings &amp; Empirical Results Roadmap</h2>
+
+        <p>
+          In accordance with STAT 563 Track A guidelines, we commit upfront to three explicit, falsifiable hypotheses before running final model estimation:
+        </p>
+
+        <div class="hypothesis-grid">
+          <div class="hypothesis-card">
+            <div class="h-num">Hypothesis 1 · PAYEMS</div>
+            <h4>Monetary Channel Explains Payrolls</h4>
+            <p>
+              The conditional BVAR will explain the bulk of post-2022 deceleration in aggregate employment (<code>PAYEMS</code>) exclusively through the monetary tightening and liquidity channel.
+            </p>
+          </div>
+          <div class="hypothesis-card highlight">
+            <div class="h-num">Hypothesis 2 · HWI</div>
+            <h4>Negative Unexplained Vacancy Break</h4>
+            <p>
+              Job openings (<code>HWI</code>) will exhibit a statistically significant, systematic negative conditional forecast error, reflecting a targeted corporate hiring freeze linked to generative AI automation.
+            </p>
+          </div>
+          <div class="hypothesis-card">
+            <div class="h-num">Hypothesis 3 · Model Comparison</div>
+            <h4>Non-Linear Architectures Isolate Divergence</h4>
+            <p>
+              Deep learning (TFT/LSTM) and zero-shot foundation models will detect the post-2022 vacancy-employment divergence more robustly than the classical linear BVAR via non-linear covariate processing.
+            </p>
+          </div>
+        </div>
+
+        <h3>Project Execution Milestones</h3>
+        <div class="roadmap-list">
+          <div class="roadmap-item">
+            <div class="roadmap-top">
+              <span class="phase-label">Phase 01 · Data &amp; EDA</span>
+              <span class="status-pill done">Completed</span>
+            </div>
+            <h4>FRED-MD Pipeline &amp; Regime Diagnostics</h4>
+            <p>Ingested <code>fred_data.csv</code>, derived <code>BAA10YM = BAA − GS10</code>, verified FRED-MD stationarity transforms, documented COVID-19 outlier &amp; post-2022 correlation decoupling.</p>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-top">
+              <span class="phase-label">Phase 02 · Classical Models</span>
+              <span class="status-pill planned">In Progress</span>
+            </div>
+            <h4>VAR(p), Minnesota BVAR &amp; Conditional IRFs</h4>
+            <p>Estimate BIC-selected VAR baseline and Minnesota-prior BVAR, validate Cholesky IRFs, and compute Waggoner–Zha conditional forecast bands for <code>PAYEMS</code> and <code>HWI</code>.</p>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-top">
+              <span class="phase-label">Phase 03 · Deep Learning</span>
+              <span class="status-pill planned">Scheduled</span>
+            </div>
+            <h4>TFT / LSTM with Known Future Covariates</h4>
+            <p>Train conditional sequence model on 2010–2022 with time-series CV hyperparameter tuning and generate post-2022 conditional counterfactual trajectories.</p>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-top">
+              <span class="phase-label">Phase 04 · Foundation &amp; Synthesis</span>
+              <span class="status-pill planned">Scheduled</span>
+            </div>
+            <h4>Chronos / TimesFM &amp; Break Tests</h4>
+            <p>Run zero-shot foundation model benchmarks, compare RMSE / CRPS &amp; cumulative forecast errors across all four families, and publish final empirical results to this page.</p>
+          </div>
+        </div>
+
+        <h3>Upcoming Model Comparison Ledger</h3>
+        <p>
+          As Phases 02–04 complete, out-of-sample evaluation metrics over the post-2022 window will populate the ledger below:
+        </p>
+
+        <div class="table-wrap">
+          <table class="academic-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Family</th>
+                <th>Post-2022 Conditioning</th>
+                <th class="num">PAYEMS RMSE</th>
+                <th class="num">HWI RMSE</th>
+                <th class="num">Mean HWI Error</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Unrestricted VAR(\(p\))</strong></td>
+                <td>Classical</td>
+                <td>Unconditional (BIC)</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td><span class="status-pill planned">Pending</span></td>
+              </tr>
+              <tr>
+                <td><strong>Bayesian VAR (Minnesota)</strong></td>
+                <td>Classical</td>
+                <td>Waggoner–Zha (<code>FEDFUNDS</code>, <code>M2SL</code>, <code>BAA10YM</code>)</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td><span class="status-pill planned">Pending</span></td>
+              </tr>
+              <tr>
+                <td><strong>TFT / LSTM</strong></td>
+                <td>Deep Learning</td>
+                <td>Known Future Covariates</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td><span class="status-pill planned">Pending</span></td>
+              </tr>
+              <tr>
+                <td><strong>Chronos / TimesFM</strong></td>
+                <td>Foundation (Zero-Shot)</td>
+                <td>Pre-2022 Context Only</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td class="num">—</td>
+                <td><span class="status-pill planned">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 6: REFERENCES & CITATION -->
+      <section class="article-section" id="references">
+        <div class="section-kicker">Section 06</div>
+        <h2>References &amp; Citation</h2>
+
+        <div class="ref-filters" id="ref-filters" role="group" aria-label="Filter references by topic">
+          <button class="series-pill active" data-tag="all">All (12)</button>
+          <button class="series-pill" data-tag="bvar">BVAR &amp; Conditional Forecasting (5)</button>
+          <button class="series-pill" data-tag="monetary">Monetary Transmission (4)</button>
+          <button class="series-pill" data-tag="labor">Labor Market (1)</button>
+          <button class="series-pill" data-tag="ml-data">Foundation Models &amp; Data (2)</button>
+        </div>
+
+        <ol class="ref-list" id="ref-list">
+          <li class="ref-item" data-tag="ml-data">
+            <span>Ansari, A. F., et al. (2024). Chronos: Learning the language of time series. <em>arXiv preprint</em> arXiv:2403.07815.</span>
+            <span class="ref-tag">Foundation Models</span>
+          </li>
+          <li class="ref-item" data-tag="bvar">
+            <span>Bańbura, M., Giannone, D., &amp; Lenza, M. (2015). Conditional forecasts and scenario analysis with vector autoregressions for large cross-sections. <em>International Journal of Forecasting</em>, 31(3), 739–756.</span>
+            <span class="ref-tag">Conditional BVAR</span>
+          </li>
+          <li class="ref-item" data-tag="monetary">
+            <span>Caldara, D., et al. (2023). The macroeconomic effects of monetary policy shocks. <em>Journal of Monetary Economics</em>.</span>
+            <span class="ref-tag">Monetary Policy</span>
+          </li>
+          <li class="ref-item" data-tag="bvar">
+            <span>Crump, R. K., Eusepi, S., Giannone, D., Qian, E., &amp; Sbordone, A. (2021). A large Bayesian VAR of the United States economy. <em>Federal Reserve Bank of New York Staff Reports</em>, (976).</span>
+            <span class="ref-tag">Large BVAR</span>
+          </li>
+          <li class="ref-item" data-tag="monetary">
+            <span>Debortoli, D., et al. (2023). Nonlinear monetary policy transmission. <em>American Economic Review</em>.</span>
+            <span class="ref-tag">Nonlinearities</span>
+          </li>
+          <li class="ref-item" data-tag="monetary">
+            <span>Eksi, O., &amp; Tas, B. K. O. (2022). Structural changes in monetary transmission. <em>Journal of Macroeconomics</em>.</span>
+            <span class="ref-tag">Structural Shifts</span>
+          </li>
+          <li class="ref-item" data-tag="bvar">
+            <span>Korobilis, D. (2025). Exploring monetary policy shocks with large-scale Bayesian VARs. <em>arXiv preprint</em> arXiv:2505.06649.</span>
+            <span class="ref-tag">Large BVAR</span>
+          </li>
+          <li class="ref-item" data-tag="ml-data">
+            <span>McCracken, M. W., &amp; Ng, S. (2016). FRED-MD: A monthly database for macroeconomic research. <em>Journal of Business &amp; Economic Statistics</em>, 34(4), 574–589.</span>
+            <span class="ref-tag">FRED-MD Data</span>
+          </li>
+          <li class="ref-item" data-tag="labor">
+            <span>Pater, M. (2017). Job openings and the labor market. <em>Labour Economics</em>.</span>
+            <span class="ref-tag">Labor Market</span>
+          </li>
+          <li class="ref-item" data-tag="monetary">
+            <span>Primiceri, C. E. (2005). Time varying structural vector autoregressions and monetary policy. <em>The Review of Economic Studies</em>, 72(3), 821–852.</span>
+            <span class="ref-tag">TVP-SVAR</span>
+          </li>
+          <li class="ref-item" data-tag="bvar">
+            <span>Sznajderska, A., &amp; Haug, A. A. (2023). Bayesian VARs with shrinkage priors. <em>Empirical Economics</em>.</span>
+            <span class="ref-tag">Shrinkage Priors</span>
+          </li>
+          <li class="ref-item" data-tag="bvar">
+            <span>Waggoner, D. F., &amp; Zha, T. (1999). Conditional forecasts in dynamic multivariate models. <em>Review of Economics and Statistics</em>, 81(4), 639–651.</span>
+            <span class="ref-tag">Conditional VAR</span>
+          </li>
+        </ol>
+
+        <div class="bibtex-card" id="cite">
+          <div class="bibtex-header">
+            <span>Cite This Project (BibTeX)</span>
+            <button class="btn btn-outline" id="copy-bibtex-btn" style="background: rgba(255,255,255,0.08); color: #F8FAFC; border-color: rgba(255,255,255,0.22);">
+              Copy BibTeX
+            </button>
+          </div>
+          <pre class="bibtex-pre" id="bibtex-content">@unpublished{kalarica2026stat563,
+  author       = {Kal Ar{\i}ca, Eda and {\c{S}}ekerci, Esra},
+  title        = {Isolating the Generative AI Labor Shock from Monetary Tightening:
+                  A Multivariate Conditional Forecasting Comparison of Bayesian VARs,
+                  Deep Learning, and Zero-Shot Foundation Models},
+  note         = {STAT 563 Multivariate Time Series Analysis, Track A Empirical Project,
+                  Department of Statistics, Middle East Technical University},
+  year         = {2026},
+  month        = nov
+}</pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>Middle East Technical University · Department of Statistics</strong> — STAT 563 Term Project (Eda Kal Arıca &amp; Esra Şekerci)
+      </div>
+      <div>
+        Data via <a href="https://www.stlouisfed.org/research/economists/mccracken/fred-databases" target="_blank" rel="noopener">FRED-MD (St. Louis Fed)</a> · Built for GitHub Pages (<code>/docs</code>)
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bundled processed data (works both over HTTPS on GitHub Pages and local file:// preview) -->
+  <script src="assets/data/fred_macro.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
