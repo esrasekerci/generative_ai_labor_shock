@@ -26,10 +26,10 @@
       <a class="nav-brand" href="#top">Monetary Tightening or Generative AI?</a>
       <ul class="nav-links">
         <li><a href="#motivation">Motivation</a></li>
-        <li><a href="#data">Data</a></li>
-        <li><a href="#figures">Empirical Figures</a></li>
+        <li><a href="#data">Data &amp; System</a></li>
+        <li><a href="#exploration">Exploration</a></li>
         <li><a href="#methodology">Methodology</a></li>
-        <li><a href="#hypotheses">Hypotheses</a></li>
+        <li><a href="#findings">Empirical Findings</a></li>
         <li><a href="#references">References</a></li>
         <li><a href="https://github.com/esrasekerci/generative_ai_labor_shock" target="_blank" rel="noopener">Repository ↗</a></li>
       </ul>
@@ -72,18 +72,33 @@
 
   <div class="page-layout">
     <aside class="toc-sidebar" aria-label="Contents">
-            <div class="toc-heading">Contents</div>
+                  <div class="toc-heading">Contents</div>
       <ul class="toc-list" id="toc-list">
-        <li><a href="#motivation">1. Research Question</a></li>
-        <li><a href="#data">2. Data &amp; System</a></li>
-        <li><a href="#figures">3. Empirical Exploration</a></li>
+        <li><a href="#motivation">1. Research Question &amp; Motivation</a></li>
+        <li><a href="#data">2. Data &amp; Macro-Financial System</a></li>
+        <li><a href="#exploration">3. Empirical Exploration &amp; Dynamics</a></li>
         <li>
-          <a href="#methodology">4. Methodology &amp; Pre-Testing</a>
-          <ul class="toc-sublist" style="padding-left:14px; font-size:0.85rem; list-style:none; margin:4px 0;">
-            <li><a href="#table-ur-battery" style="color:var(--text-muted);">4.1 Unit-Root Battery</a></li>
-            <li><a href="#table-johansen" style="color:var(--text-muted);">4.2 Johansen Cointegration</a></li>
-            <li><a href="#table-corr-matrix" style="color:var(--text-muted);">4.3 Residual &amp; Causal Invariance</a></li>
+          <a href="#methodology">4. Econometric Methodology &amp; Pre-Testing</a>
+          <ul class="toc-sublist" style="padding-left:14px; font-size:0.83rem; list-style:none; margin:4px 0;">
+            <li><a href="#unit-root-battery" style="color:var(--text-muted);">4.1 Unit-Root Battery</a></li>
+            <li><a href="#johansen-cointegration" style="color:var(--text-muted);">4.2 Johansen Cointegration</a></li>
+            <li><a href="#residual-invariance" style="color:var(--text-muted);">4.3 Residual &amp; Causal Invariance</a></li>
+            <li><a href="#model-specifications" style="color:var(--text-muted);">4.4 Candidate Specifications</a></li>
           </ul>
+        </li>
+        <li>
+          <a href="#findings">5. Empirical Findings &amp; Interpretation</a>
+          <ul class="toc-sublist" style="padding-left:14px; font-size:0.83rem; list-style:none; margin:4px 0;">
+            <li><a href="#hac-break-tests" style="color:var(--text-muted);">5.1 Newey–West HAC Tests</a></li>
+            <li><a href="#counterfactual-trajectories" style="color:var(--text-muted);">5.2 Counterfactual Paths</a></li>
+            <li><a href="#structural-irfs" style="color:var(--text-muted);">5.3 Structural IRFs &amp; Robustness</a></li>
+            <li><a href="#dmp-theory" style="color:var(--text-muted);">5.4 Search &amp; Matching (DMP)</a></li>
+            <li><a href="#transmission-lags" style="color:var(--text-muted);">5.5 Transmission Lag Accounting</a></li>
+            <li><a href="#statistical-rigor" style="color:var(--text-muted);">5.6 Statistical Rigor</a></li>
+          </ul>
+        </li>
+        <li><a href="#references">6. References &amp; BibTeX</a></li>
+      </ul>
         </li>
         <li>
           <a href="#hypotheses">5. Findings &amp; Interpretation</a>
@@ -216,8 +231,8 @@
       </section>
 
       <!-- 3. EMPIRICAL EXPLORATION -->
-      <section class="article-section" id="figures">
-        <h2>3. Empirical Exploration</h2>
+      <section class="article-section" id="exploration">
+        <h2>3. Empirical Exploration &amp; Descriptive Dynamics</h2>
 
         <!-- Figure 2 -->
         <div class="figure-block">
@@ -268,7 +283,7 @@
         </div>
       </section>
 
-            <!-- 4. METHODOLOGY & EMPIRICAL PRE-TESTING -->
+                  <!-- 4. METHODOLOGY & EMPIRICAL PRE-TESTING -->
       <section class="article-section" id="methodology">
         <h2>4. Econometric Methodology &amp; Empirical Pre-Testing</h2>
 
@@ -285,12 +300,12 @@
           All candidate models are estimated strictly on the pre-2022 training sample (\(t = 1, \dots, T_{\text{train}}\), spanning 2010M1–2022M10, \(T_{\text{train}} = 154\)) and evaluated out of sample over the 46 post-2022 months (\(h = 1, \dots, H\), spanning 2022M11–2026M8).
         </p>
 
-        <h3>4.1 Confirmatory Unit-Root and Stationarity Battery</h3>
+        <h3 id="unit-root-battery">4.1 Confirmatory Unit-Root and Stationarity Battery</h3>
         <p>
           Following Enders (2015, Ch. 4), Cryer &amp; Chan (2008), and Shumway &amp; Stoffer (2011), each series is evaluated across five complementary tests: Augmented Dickey–Fuller (ADF, BIC lag selection), Phillips–Perron (\(Z_\tau\)), Elliott–Rothenberg–Stock DF-GLS, Kwiatkowski–Phillips–Schmidt–Shin (KPSS, \(H_0: I(0)\)), and Zivot–Andrews (ZA) endogenous structural break tests.
         </p>
 
-        <div class="table-wrap" id="table-ur-battery">
+        <div class="table-wrap">
           <div class="table-title">Table 2. Confirmatory Unit-Root and Stationarity Battery (Pre-AI Training Sample: 2010M1–2022M10)</div>
           <table class="academic-table">
             <thead>
@@ -465,12 +480,12 @@
           </div>
         </div>
 
-        <h3>4.2 Johansen Cointegration Rank Analysis</h3>
+        <h3 id="johansen-cointegration">4.2 Johansen Cointegration Rank Analysis</h3>
         <p>
           Enders (2015, Ch. 6) emphasizes that if non-stationary series share common stochastic trends, estimating an unrestricted VAR solely in first differences omits long-run cointegrating equilibria. Table 3 presents the Johansen Trace and Maximum Eigenvalue rank tests on the 5-variable non-stationary system in log-levels.
         </p>
 
-        <div class="table-wrap" id="table-johansen">
+        <div class="table-wrap">
           <div class="table-title">Table 3. Johansen Cointegration Rank Tests (Levels System, VAR Order \(p = 2\))</div>
           <table class="academic-table">
             <thead>
@@ -662,12 +677,12 @@
           </div>
         </div>
 
-        <h3>4.3 Reduced-Form VAR Diagnostics &amp; Residual Invariance Audit</h3>
+        <h3 id="residual-invariance">4.3 Reduced-Form VAR Diagnostics &amp; Residual Invariance Audit</h3>
         <p>
           Bayesian Information Criterion (BIC) selects a parsimonious VAR(2) specification. The companion matrix eigenvalues confirm full dynamic stability: \(|\lambda_{\max}| = 0.9045 < 1.0\). Table 4 reports the innovation correlation matrix to audit Cholesky causal ordering sensitivity (Enders 2015, p. 298).
         </p>
 
-        <div class="table-wrap" id="table-corr-matrix">
+        <div class="table-wrap">
           <div class="table-title">Table 4. VAR(2) Innovation Correlation Matrix &amp; Cholesky Invariance Audit</div>
           <table class="academic-table">
             <thead>
@@ -743,7 +758,7 @@
           </div>
         </div>
 
-        <h3>4.4 Candidate Model Specifications</h3>
+        <h3 id="model-specifications">4.4 Candidate Model Specifications</h3>
         <div class="table-wrap">
           <div class="table-title">Table 5. Planned Model Specifications &amp; Identification Schemes</div>
           <table class="academic-table">
@@ -786,14 +801,15 @@
       </section>
 
       <!-- 5. EMPIRICAL FINDINGS & THEORETICAL INTERPRETATION -->
-      <section class="article-section" id="hypotheses">
+      <section class="article-section" id="findings">
         <h2>5. Empirical Findings &amp; Theoretical Macroeconomic Interpretation</h2>
 
         <p>
           Following Waggoner &amp; Zha (1999) structural conditional forecasting, the baseline VAR(2) estimated strictly on the pre-AI training sample (2010M1–2022M10) was conditioned on the realized post-2022 paths of the monetary and financial block \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\). Systematic forecast errors over the 46-month out-of-sample evaluation window (November 2022 to August 2026) were tested for non-zero means via Newey–West (1987) HAC standard errors with Bartlett kernel bandwidth \(b = 3\).
         </p>
 
-        <div class="table-wrap" id="hac-tests">
+        <h3 id="hac-break-tests">5.1 Out-of-Sample Evaluation &amp; Newey–West HAC Structural Break Tests</h3>
+        <div class="table-wrap">
           <div class="table-title">Table 6. Out-of-Sample Evaluation &amp; Newey–West HAC Structural Break Tests (2022M11–2026M8)</div>
           <table class="academic-table">
             <thead>
@@ -854,23 +870,27 @@
           </table>
         </div>
 
-        <div class="figure-block" id="fig-counterfactuals" style="margin-top:24px;">
+        <h3 id="counterfactual-trajectories" style="margin-top:28px;">5.2 Conditional Counterfactual Trajectories vs. Realized Out-of-Sample Paths</h3>
+        <div class="figure-block" id="fig-counterfactuals" style="margin-top:12px;">
           <div class="figure-heading">Figure 5. Conditional Counterfactual Trajectories vs. Realized Out-of-Sample Paths (2022–2026)</div>
-          <img src="assets/images/fig4_conditional_counterfactual_paths.png" alt="Conditional Counterfactual Trajectories" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0;" />
+          <div style="max-width:820px; margin:14px auto;">
+            <img src="assets/images/fig4_web_counterfactuals.png" alt="Conditional Counterfactual Trajectories" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
+          </div>
           <div class="figure-caption">
-            Realized post-2022 trajectory (red solid) versus policy-conditioned VAR(2) counterfactual fixing realized <code>FEDFUNDS</code>, <code>M2SL</code>, and <code>BAA10YM</code> (blue dashed) and unconditional VAR(2) forecast (gray dotted). Conditioning on monetary policy fully aligns aggregate employment (<code>PAYEMS</code>), while widening the unexplained collapse in job openings (<code>HWI</code>).
+            Realized post-2022 trajectory (red solid) versus policy-conditioned VAR(2) counterfactual fixing realized <code>FEDFUNDS</code>, <code>M2SL</code>, and <code>BAA10YM</code> (blue dashed) and unconditional VAR(2) forecast (gray dotted). Panel (a) shows job openings collapsing by over 3.3 million postings below policy-conditioned historical norms. Panel (b) shows payroll employment tracking the policy counterfactual with zero statistical break (\(p = 0.933\)).
           </div>
         </div>
 
-        <div class="figure-block" style="margin-top:24px;">
+        <h3 id="structural-irfs" style="margin-top:28px;">5.3 Structural Impulse Responses &amp; Identification Invariance Validation</h3>
+        <div class="figure-block" style="margin-top:12px;">
           <div class="figure-heading">Figure 6. Structural Impulse Response Functions &amp; Cholesky Invariance Validation</div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; max-width:820px; margin:14px auto;">
             <div>
-              <img src="assets/images/fig2_structural_irfs.png" alt="Structural IRFs" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0;" />
+              <img src="assets/images/fig2_structural_irfs.png" alt="Structural IRFs" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);" />
               <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; text-align:center;">(a) Orthogonalized IRFs with 95% bootstrap CIs (24-month horizon)</p>
             </div>
             <div>
-              <img src="assets/images/fig3_ordering_robustness_irf.png" alt="Ordering Robustness" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0;" />
+              <img src="assets/images/fig3_ordering_robustness_irf.png" alt="Ordering Robustness" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);" />
               <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; text-align:center;">(b) Cholesky ordering invariance check (Enders 2015, p. 298)</p>
             </div>
           </div>
@@ -881,13 +901,15 @@
 
         <div class="figure-block" style="margin-top:24px;">
           <div class="figure-heading">Figure 7. Multivariate Outlier Audit &amp; COVID-19 Shock Decomposition (Wei 2019, Sec. 2.7)</div>
-          <img src="assets/images/fig1_covid_outlier_audit.png" alt="Multivariate Outlier Audit" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0;" />
+          <div style="max-width:820px; margin:14px auto;">
+            <img src="assets/images/fig1_covid_outlier_audit.png" alt="Multivariate Outlier Audit" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
+          </div>
           <div class="figure-caption">
             Tsay–Peña–Pankratz Multivariate Innovational Outlier (MIO) test statistic against the Bonferroni 1% critical value (24.36), identifying March 2020 (\(J_{I,h} = 107.61\)) and April 2020 (\(J_{I,h} = 38.18\)) as extreme shocks.
           </div>
         </div>
 
-        <h3 id="theoretical-dmp" style="margin-top:36px;">5.1 Theoretical Search-and-Matching Interpretation (Diamond–Mortensen–Pissarides)</h3>
+        <h3 id="dmp-theory" style="margin-top:36px;">5.4 Theoretical Search-and-Matching Interpretation (Diamond–Mortensen–Pissarides)</h3>
         <p>
           Under canonical Diamond–Mortensen–Pissarides (DMP) search and matching theory (Pater 2017), firms create vacancies up to the point where the marginal cost of posting equals the expected present discounted value of a filled position. A classic monetary contraction depresses product demand and elevates borrowing costs, producing a symmetric downward movement along the Beveridge curve: vacancies contract, unemployment rises, and aggregate payroll employment decelerates symmetrically according to historical matching elasticities.
         </p>
@@ -902,12 +924,12 @@
           Under DMP theory, this acute divergence cannot be reconciled with monetary cooling; instead, it reflects an exogenous inward shift in recruiting intensity and vacancy creation. This matches the theoretical signature of generative AI adoption: firms implemented targeted external hiring freezes for knowledge, cognitive, and software roles while engaging in labor hoarding of incumbent staff to assess internal AI productivity enhancements.
         </p>
 
-        <h3 id="transmission-lags" style="margin-top:28px;">5.2 Methodological Transmission Lag Accounting</h3>
+        <h3 id="transmission-lags" style="margin-top:28px;">5.5 Methodological Transmission Lag Accounting</h3>
         <p>
           Standard dummy-break regressions fail because monetary policy transmits with substantial distributed lags. As demonstrated in Figure 6(a), monetary shocks peak in industrial output (\(\text{INDPRO}\)) and payrolls (\(\text{PAYEMS}\)) with a 12-to-16 month lag, whereas vacancy postings respond with immediate elasticity. By integrating dynamic multipliers \(\mathbf{M}_{h-s}\mathbf{P}\) over the entire 46-month horizon, the Waggoner–Zha algorithm fully purges the delayed cumulative drag of monetary tightening. The residual shortfall in job openings is thus strictly orthogonal to monetary policy.
         </p>
 
-        <h3 style="margin-top:28px;">5.3 Statistical and Identification Rigor</h3>
+        <h3 id="statistical-rigor" style="margin-top:28px;">5.6 Statistical Rigor &amp; Econometric Validation</h3>
         <ol style="margin: 12px 0 16px 24px; line-height: 1.6;">
           <li><strong>Dynamic Stability</strong>: All 12 companion matrix roots satisfy \(|\lambda_i| \le 0.9045 < 1\), ensuring stationary, non-explosive multiplier decay.</li>
           <li><strong>Ordering Invariance</strong>: The empirical residual correlation between policy and labor blocks is statistically indistinguishable from zero (\(|\hat{\rho}| \le 0.129 < 2\text{SE} = 0.162\)), proving that recursive Cholesky identification introduces no causal distortion (Enders 2015).</li>
@@ -917,7 +939,7 @@
 
       <!-- 6. REFERENCES -->
       <section class="article-section" id="references">
-        <h2>6. References</h2>
+        <h2>6. References &amp; Replication Code</h2>
 
         <ol class="ref-list">
           <li>Ansari, A. F., et al. (2024). Chronos: Learning the language of time series. <em>Transactions on Machine Learning Research</em>.</li>

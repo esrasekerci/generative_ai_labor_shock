@@ -467,25 +467,41 @@
   }
 
   function initScrollSpy() {
-    const sections = Array.from(document.querySelectorAll(".article-section[id]"));
-    const tocLinks = Array.from(document.querySelectorAll("#toc-list a"));
-    if (!sections.length || !tocLinks.length) return;
+    const targets = Array.from(document.querySelectorAll(".article-section[id], h3[id]"));
+    const tocLinks = Array.from(document.querySelectorAll("#toc-list a, .nav-links a"));
+    if (!targets.length || !tocLinks.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            tocLinks.forEach((a) => {
-              a.classList.toggle("active", a.getAttribute("href") === `#${id}`);
-            });
+    let activeId = "";
+
+    function updateActive() {
+      const scrollPos = window.scrollY + 110;
+      let current = "";
+      for (let i = 0; i < targets.length; i++) {
+        const top = targets[i].offsetTop;
+        if (scrollPos >= top) {
+          current = targets[i].id;
+        }
+      }
+      if (current && current !== activeId) {
+        activeId = current;
+        tocLinks.forEach((a) => {
+          const href = a.getAttribute("href");
+          if (href === `#${current}`) {
+            a.classList.add("active");
+          } else {
+            const parentSection = document.getElementById(current)?.closest(".article-section");
+            if (parentSection && href === `#${parentSection.id}` && !a.closest(".toc-sublist")) {
+              a.classList.add("active");
+            } else {
+              a.classList.remove("active");
+            }
           }
         });
-      },
-      { rootMargin: "-20% 0px -68% 0px", threshold: 0.05 }
-    );
+      }
+    }
 
-    sections.forEach((sec) => observer.observe(sec));
+    window.addEventListener("scroll", updateActive, { passive: true });
+    setTimeout(updateActive, 100);
   }
 
   function renderMath() {

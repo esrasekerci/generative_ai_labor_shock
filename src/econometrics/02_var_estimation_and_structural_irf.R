@@ -594,4 +594,45 @@ p_traj <- ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype =
 ggsave("outputs/figures/fig4_conditional_counterfactual_paths.pdf", p_traj, width = 3.5, height = 3.6)
 ggsave("outputs/figures/fig4_conditional_counterfactual_paths.png", p_traj, width = 3.5, height = 3.6, dpi = 300)
 
+# Export Trajectory Data CSV
+write.csv(plot_traj_df, "outputs/econometrics/table_counterfactual_trajectories.csv", row.names = FALSE)
+
+# Generate Widescreen Web Figure (ncol = 2 horizontal aspect ratio ~ 2.05 : 1 for GitHub.io)
+p_traj_web <- ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype = Type)) +
+  geom_line(linewidth = 0.95) +
+  facet_wrap(~SeriesLabel, scales = "free_y", ncol = 2) +
+  scale_color_manual(values = c(
+    "Realized Post-2022" = "#C0392B",
+    "Policy-Conditioned VAR(2)" = "#1F618D",
+    "Unconditional VAR(2)" = "#7F8C8D"
+  )) +
+  scale_linetype_manual(values = c(
+    "Realized Post-2022" = "solid",
+    "Policy-Conditioned VAR(2)" = "dashed",
+    "Unconditional VAR(2)" = "dotted"
+  )) +
+  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    x = NULL, y = "Levels (Thousands)",
+    color = "Trajectory Specification", linetype = "Trajectory Specification"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "top",
+    legend.text = element_text(size = 9.5),
+    legend.title = element_text(size = 10, face = "bold"),
+    legend.margin = margin(b = 4),
+    strip.text = element_text(face = "bold", size = 10.5),
+    strip.background = element_rect(fill = "#F8FAFC", color = "#E2E8F0"),
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(1.2, "lines"),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 9),
+    plot.margin = margin(t = 6, r = 12, b = 6, l = 8, "pt")
+  )
+
+ggsave("outputs/figures/fig4_web_counterfactuals.png", p_traj_web, width = 8.6, height = 4.2, dpi = 300)
+file.copy("outputs/figures/fig4_web_counterfactuals.png", "docs/assets/images/fig4_web_counterfactuals.png", overwrite = TRUE)
+
 cat("\nStep 2 completed successfully. All figures and tables exported to outputs/\n")
