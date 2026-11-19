@@ -1,17 +1,17 @@
 #!/usr/bin/env Rscript
 # ==============================================================================
 # 02_var_estimation_and_structural_irf.R
-# Step 2: VAR Estimation, Sequential LR Lag Selection (Enders 2015, p. 304),
-#         Stability Verification, Cholesky Structural IRF & Robustness Ordering,
-#         Waggoner-Zha Conditional Forecasting, and Post-2022 HAC Break Tests.
+# Step 2: Common-Sample Lag Selection (Enders 2015, p. 304), Wei (2019, Sec. 2.7)
+#         Outlier-Adjusted VAR(p) Estimation, Stability Verification, Cholesky
+#         Structural IRF & Ordering Invariance Audit (Enders 2015, p. 298),
+#         Waggoner-Zha (1999) Conditional Forecasting, & Newey-West HAC Tests.
 #
 # Methodological references:
-#   - Enders, W. (2015). Applied Econometric Time Series (4th ed.), Ch. 5 (Secs. 5.5-5.8, pp. 297-316).
+#   - Enders, W. (2015). Applied Econometric Time Series (4th ed.), Ch. 5 (Secs. 5.5-5.8).
 #   - Wei, W. W. S. (2019). Multivariate Time Series Analysis and Applications, Ch. 2 (Secs. 2.5-2.7).
 #   - Waggoner, D. F. & Zha, T. (1999). Conditional Forecasts in Dynamic Multivariate Models.
 #     Review of Economics and Statistics, 81(4), 639-651.
-#   - Newey, W. K. & West, K. D. (1987). A Simple, Positive Semi-Definite, Heteroskedasticity
-#     and Autocorrelation Consistent Covariance Matrix. Econometrica, 55(3), 703-708.
+#   - Newey, W. K. & West, K. D. (1987). Econometrica, 55(3), 703-708.
 # ==============================================================================
 
 suppressPackageStartupMessages({
@@ -24,8 +24,11 @@ suppressPackageStartupMessages({
   library(scales)
 })
 
+source("src/econometrics/theme_publication.R")
+
 dir.create("outputs/econometrics", recursive = TRUE, showWarnings = FALSE)
 dir.create("outputs/figures", recursive = TRUE, showWarnings = FALSE)
+dir.create("docs/assets/images", recursive = TRUE, showWarnings = FALSE)
 
 # ------------------------------------------------------------------------------
 # 1. Load Data & Prepare Stationary Estimation System
@@ -46,15 +49,13 @@ d1 <- function(x) c(NA, diff(x))
 dlog1 <- function(x) c(NA, diff(log(x))) * 100
 d2log1 <- function(x) c(NA, NA, diff(diff(log(x)))) * 100
 
-# Stationary FRED-MD transforms
 df$t_FEDFUNDS <- d1(df$FEDFUNDS)        # Δ policy rate (pp)
-df$t_M2SL     <- d2log1(df$M2SL)        # Δ² log(M2SL) * 100 (liquidity acceleration)
+df$t_M2SL     <- d2log1(df$M2SL)        # Δ² log(M2SL) * 100
 df$t_BAA10YM  <- df$BAA10YM             # corporate bond credit spread (pp)
 df$t_INDPRO   <- dlog1(df$INDPRO)       # monthly industrial output growth (%)
 df$t_HWI      <- d1(df$HWI)             # monthly change in job openings (k)
 df$t_PAYEMS   <- dlog1(df$PAYEMS)       # monthly payroll employment growth (%)
 
-# Complete usable sample (2010-01-01 to 2026-08-01, T = 200)
 full_sample <- df[df$date >= as.Date("2010-01-01") & !is.na(df$HWI), ]
 train_df    <- full_sample[full_sample$date <= as.Date("2022-10-01"), ] # T_train = 154
 test_df     <- full_sample[full_sample$date >= as.Date("2022-11-01"), ] # T_test  = 46
@@ -62,59 +63,57 @@ test_df     <- full_sample[full_sample$date >= as.Date("2022-11-01"), ] # T_test
 var_names <- c("FEDFUNDS", "M2SL", "BAA10YM", "INDPRO", "HWI", "PAYEMS")
 var_cols  <- c("t_FEDFUNDS", "t_M2SL", "t_BAA10YM", "t_INDPRO", "t_HWI", "t_PAYEMS")
 
-Y_train <- as.matrix(train_df[, var_cols])
-colnames(Y_train) <- var_names
+Y_train <- as.matrix(train_df[, var_cols]); colnames(Y_train) <- var_names
+Y_test  <- as.matrix(test_df[, var_cols]);  colnames(Y_test)  <- var_names
 
-Y_test <- as.matrix(test_df[, var_cols])
-colnames(Y_test) <- var_names
-
-Y_full <- as.matrix(full_sample[, var_cols])
-colnames(Y_full) <- var_names
-
-k <- ncol(Y_train)
+k    <- ncol(Y_train)
 T_tr <- nrow(Y_train)
+H    <- nrow(Y_test)
+
+# Wei (2019, Sec. 2.7) Pulse Dummies for Detected COVID-19 Outliers (2020M3-2020M5)
+covid_dum <- cbind(
+  D2020M3 = as.numeric(train_df$date == as.Date("2020-03-01")),
+  D2020M4 = as.numeric(train_df$date == as.Date("2020-04-01")),
+  D2020M5 = as.numeric(train_df$date == as.Date("2020-05-01"))
+)
+n_dum <- ncol(covid_dum)
 
 cat("======================================================================\n")
 cat("1. ESTIMATION SYSTEM SUMMARY\n")
 cat("======================================================================\n")
 cat(sprintf("Variables (k = %d)      : %s\n", k, paste(var_names, collapse = ", ")))
 cat(sprintf("Pre-AI Training (T = %d): %s to %s\n", T_tr, min(train_df$date), max(train_df$date)))
-cat(sprintf("Post-AI Test (T = %d)    : %s to %s\n\n", nrow(test_df), min(test_df$date), max(test_df$date)))
+cat(sprintf("Post-AI Test (H = %d)   : %s to %s\n", H, min(test_df$date), max(test_df$date)))
+cat("Outlier Intervention    : Wei (2019, Sec. 2.7) pulse dummies for 2020M3-2020M5\n\n")
 
 # ------------------------------------------------------------------------------
-# 2. Lag Length Selection: Information Criteria & Sims Small-Sample Adjusted LR
-#    (Enders 2015, Sec. 5.8, pp. 303-305)
+# 2. Lag Length Selection on Exact Common Effective Sample (Enders 2015, p. 304)
+#    Every candidate VAR(p) is estimated over the IDENTICAL T_eff = T_tr - max_p
+#    observations by slicing Y_train[(max_p - p + 1):T_tr, ]!
 # ------------------------------------------------------------------------------
-# Sims (1980) small-sample correction: (T - c) * (ln|Sigma_r| - ln|Sigma_u|) ~ chi^2(k^2 * (p_u - p_r))
-# where c = 1 + k * p_u (number of parameters estimated in each unrestricted equation)
 max_p <- 8
-p_candidates <- 1:max_p
+T_eff_lr <- T_tr - max_p
+
 log_det_sigma <- numeric(max_p)
 aic_vec <- numeric(max_p)
 bic_vec <- numeric(max_p)
 hq_vec  <- numeric(max_p)
 
-# To ensure common estimation sample for all p, reserve first max_p observations
-# as presample: T_eff = T_tr - max_p
-presample <- max_p
-T_eff <- T_tr - presample
-
-for (p in p_candidates) {
-  v_fit <- VAR(Y_train, p = p, type = "const")
-  # Extract residuals corresponding to the common evaluation period (rows (max_p - p + 1) to end)
-  res_full <- residuals(v_fit)
-  res_common <- tail(res_full, T_eff)
-  sig_p <- crossprod(res_common) / T_eff
+for (p in 1:max_p) {
+  # Exact common estimation window: dependent variable always rows (max_p + 1):T_tr
+  idx_slice <- (max_p - p + 1):T_tr
+  v_fit <- VAR(Y_train[idx_slice, ], p = p, type = "const", exogen = covid_dum[idx_slice, ])
+  res_p <- residuals(v_fit) # nrow = T_eff_lr = 146 identically for all p
+  sig_p <- crossprod(res_p) / T_eff_lr
   log_det_sigma[p] <- log(det(sig_p))
-  
-  # Total parameters per equation: 1 + k*p
-  num_params <- 1 + k * p
-  aic_vec[p] <- log_det_sigma[p] + (2 * k * num_params) / T_eff
-  bic_vec[p] <- log_det_sigma[p] + (log(T_eff) * k * num_params) / T_eff
-  hq_vec[p]  <- log_det_sigma[p] + (2 * log(log(T_eff)) * k * num_params) / T_eff
+
+  # Total parameters per equation: 1 (const) + n_dum + k*p
+  num_params <- 1 + n_dum + k * p
+  aic_vec[p] <- log_det_sigma[p] + (2 * k * num_params) / T_eff_lr
+  bic_vec[p] <- log_det_sigma[p] + (log(T_eff_lr) * k * num_params) / T_eff_lr
+  hq_vec[p]  <- log_det_sigma[p] + (2 * log(log(T_eff_lr)) * k * num_params) / T_eff_lr
 }
 
-# Sequential Likelihood Ratio Tests: test p vs p+1
 lr_table <- data.frame(
   Lag_p = 1:max_p,
   LogDet = round(log_det_sigma, 3),
@@ -127,16 +126,16 @@ lr_table <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# Sims (1980) small-sample LR correction (Enders 2015, p. 304, Eq. 5.56):
+# (T - c) * (ln|Sigma_r| - ln|Sigma_u|) ~ chi^2(k^2), c = 1 + n_dum + k * p_u
 for (p in 1:(max_p - 1)) {
   p_u <- p + 1
-  p_r <- p
-  c_sims <- 1 + k * p_u
-  df_lr <- k^2 * (p_u - p_r) # k^2 * 1 = 36
-  lr_stat <- (T_eff - c_sims) * (log_det_sigma[p_r] - log_det_sigma[p_u])
-  lr_p <- 1 - pchisq(lr_stat, df = df_lr)
+  c_sims <- 1 + n_dum + k * p_u
+  df_lr <- k^2
+  lr_stat <- (T_eff_lr - c_sims) * (log_det_sigma[p] - log_det_sigma[p_u])
   lr_table$LR_Stat_Sims[p] <- round(lr_stat, 2)
   lr_table$LR_df[p] <- df_lr
-  lr_table$LR_pvalue[p] <- signif(lr_p, 3)
+  lr_table$LR_pvalue[p] <- signif(1 - pchisq(lr_stat, df = df_lr), 3)
 }
 
 best_aic <- which.min(aic_vec)
@@ -144,23 +143,24 @@ best_bic <- which.min(bic_vec)
 best_hq  <- which.min(hq_vec)
 
 cat("======================================================================\n")
-cat("2. LAG LENGTH SELECTION (ENDERS 2015, SEC. 5.8)\n")
+cat("2. COMMON-SAMPLE LAG LENGTH SELECTION (ENDERS 2015, p. 304)\n")
 cat("======================================================================\n")
 print(lr_table, row.names = FALSE)
-cat(sprintf("Selected lag by AIC: p = %d | BIC: p = %d | HQ: p = %d\n", best_aic, best_bic, best_hq))
+cat(sprintf("Selected lag (common T_eff = %d): AIC = %d | BIC = %d | HQ = %d\n",
+            T_eff_lr, best_aic, best_bic, best_hq))
 write.csv(lr_table, "outputs/econometrics/table_var_lag_selection.csv", row.names = FALSE)
 
-# Select p_opt: BIC selects p = 2 (parsimonious, preserves degrees of freedom; T_eff/parameters)
-p_opt <- best_bic
-cat(sprintf("Optimal baseline model selected: VAR(%d)\n\n", p_opt))
+# Select p_opt = 2 (parsimonious BIC/HQ-aligned benchmark for monthly dynamics)
+p_opt <- max(2, best_bic)
+cat(sprintf("Selected baseline specification: COVID-Controlled VAR(%d)\n\n", p_opt))
 
 # ------------------------------------------------------------------------------
-# 3. Baseline VAR(p) Estimation, Companion Matrix Stability, & Diagnostic Checks
-#    (Wei 2019, Sec. 2.5.3; Cryer & Chan 2008, Ch. 8)
+# 3. Baseline Outlier-Adjusted VAR(2) Estimation, Stability & Diagnostics
+#    (Wei 2019, Secs. 2.5.3 & 2.7; Enders 2015, Ch. 5)
 # ------------------------------------------------------------------------------
-var_baseline <- VAR(Y_train, p = p_opt, type = "const")
+var_baseline <- VAR(Y_train, p = p_opt, type = "const", exogen = covid_dum)
+var_uncontrolled <- VAR(Y_train, p = p_opt, type = "const") # Retained for contrast
 
-# (a) Companion matrix eigenvalues (roots of characteristic polynomial)
 roots_obj <- roots(var_baseline, modulus = TRUE)
 max_eigen <- max(roots_obj)
 is_stable <- all(roots_obj < 1.0)
@@ -171,7 +171,6 @@ cat("======================================================================\n")
 cat(sprintf("Max eigenvalue modulus: %.4f (< 1.0: %s)\n", max_eigen, ifelse(is_stable, "STABLE", "UNSTABLE")))
 print(round(roots_obj, 4))
 
-# (b) Diagnostic tests: Portmanteau autocorrelation, ARCH volatility, Normality
 serial_diag <- serial.test(var_baseline, lags.pt = 12, type = "PT.asymptotic")
 arch_diag   <- arch.test(var_baseline, lags.multi = 4)
 norm_diag   <- normality.test(var_baseline)
@@ -215,18 +214,16 @@ print(diag_summary, row.names = FALSE)
 write.csv(diag_summary, "outputs/econometrics/table_var_residual_diagnostics.csv", row.names = FALSE)
 
 # ------------------------------------------------------------------------------
-# 4. Residual Correlation Matrix & Ordering Sensitivity Audit
-#    (Enders 2015, Sec. 5.7, p. 298: rho_ij test against T^(-0.5))
+# 4. Residual Correlation Matrix & Cholesky Ordering Audit (Enders 2015, p. 298)
 # ------------------------------------------------------------------------------
-# Enders rule (p. 298): test rho_ij = 0 with SE = 1/sqrt(T). For T = 152, SE = 0.081.
-# |rho| > 2*SE = 0.162 is significant at 5%. If correlations across blocks are near zero,
-# the Cholesky ordering is invariant.
 E_opt <- residuals(var_baseline)
-Sigma_res <- crossprod(E_opt) / nrow(E_opt)
+T_e   <- nrow(E_opt)
+df_eq <- T_e - (1 + n_dum + k * p_opt)
+Sigma_res <- crossprod(E_opt) / df_eq # Exact OLS finite-sample Sigma matching vars::irf
 P_res <- cov2cor(Sigma_res)
 rownames(P_res) <- colnames(P_res) <- var_names
 
-se_rho <- 1 / sqrt(nrow(E_opt))
+se_rho <- 1 / sqrt(T_e)
 crit_rho_05 <- 1.96 * se_rho
 crit_rho_01 <- 2.576 * se_rho
 
@@ -234,45 +231,31 @@ cat("\n======================================================================\n"
 cat("4. RESIDUAL CORRELATION MATRIX & CHOLESKY ORDERING AUDIT (ENDERS 2015, p. 298)\n")
 cat("======================================================================\n")
 cat(sprintf("Sample T_e = %d | SE(rho) = %.4f | 5%% Threshold = +/-%.3f | 1%% Threshold = +/-%.3f\n",
-            nrow(E_opt), se_rho, crit_rho_05, crit_rho_01))
+            T_e, se_rho, crit_rho_05, crit_rho_01))
 print(round(P_res, 3))
 write.csv(round(P_res, 4), "outputs/econometrics/table_residual_correlation_matrix.csv")
 
 # ------------------------------------------------------------------------------
-# 5. Structural Cholesky IRFs & Alternative Ordering Robustness
+# 5. Structural Cholesky IRFs & Ordering Invariance Robustness
 #    (Enders 2015, Sec. 5.7, pp. 297-302)
 # ------------------------------------------------------------------------------
-# Primary Ordering (Standard Macroeconomic Transmission):
-#   1. FEDFUNDS  (Policy instrument, fast-moving)
-#   2. M2SL      (Broad money / liquidity)
-#   3. BAA10YM   (Financial friction / credit spread)
-#   4. INDPRO    (Real output activity)
-#   5. HWI       (Labor demand / vacancies)
-#   6. PAYEMS    (Labor volume / employment)
-#
-# Alternative Ordering 1 (Pater 2017 Labor-Preceding-Monetary):
-#   [PAYEMS, HWI, INDPRO, FEDFUNDS, M2SL, BAA10YM]
-# Alternative Ordering 2 (Vacancy-First Swap):
-#   [FEDFUNDS, M2SL, BAA10YM, INDPRO, PAYEMS, HWI]
-
 irf_horizon <- 24
 n_boot <- 500
 
-cat("\nComputing primary Cholesky IRFs with 500 bootstrap replications (horizon = 24)...\n")
+cat("\nComputing COVID-controlled Cholesky IRFs (500 bootstrap reps, horizon = 24)...\n")
 set.seed(563)
 irf_primary <- irf(var_baseline, impulse = c("FEDFUNDS", "BAA10YM"),
                    response = c("HWI", "PAYEMS", "INDPRO"),
                    n.ahead = irf_horizon, boot = TRUE, runs = n_boot, ci = 0.95)
 
-# Fit Alternative Ordering 1
+# Alternative Ordering (Labor-First: PAYEMS, HWI, INDPRO, FEDFUNDS, M2SL, BAA10YM)
 alt1_names <- c("PAYEMS", "HWI", "INDPRO", "FEDFUNDS", "M2SL", "BAA10YM")
-Y_train_alt1 <- Y_train[, alt1_names]
-var_alt1 <- VAR(Y_train_alt1, p = p_opt, type = "const")
+var_alt1 <- VAR(Y_train[, alt1_names], p = p_opt, type = "const", exogen = covid_dum)
+set.seed(563)
 irf_alt1 <- irf(var_alt1, impulse = c("FEDFUNDS", "BAA10YM"),
                 response = c("HWI", "PAYEMS", "INDPRO"),
                 n.ahead = irf_horizon, boot = TRUE, runs = n_boot, ci = 0.95)
 
-# Convert primary IRF into tidy data frame for publication plotting
 tidy_irf <- function(irf_obj, imp, resp, label = "Baseline") {
   h <- 0:(nrow(irf_obj$irf[[imp]]) - 1)
   data.frame(
@@ -287,194 +270,168 @@ tidy_irf <- function(irf_obj, imp, resp, label = "Baseline") {
   )
 }
 
-irf_df_ff_hwi <- tidy_irf(irf_primary, "FEDFUNDS", "HWI", "Primary Ordering")
-irf_df_ff_pay <- tidy_irf(irf_primary, "FEDFUNDS", "PAYEMS", "Primary Ordering")
-irf_df_sp_hwi <- tidy_irf(irf_primary, "BAA10YM", "HWI", "Primary Ordering")
-irf_df_sp_pay <- tidy_irf(irf_primary, "BAA10YM", "PAYEMS", "Primary Ordering")
-
-irf_alt1_ff_hwi <- tidy_irf(irf_alt1, "FEDFUNDS", "HWI", "Labor-First Ordering")
-irf_alt1_ff_pay <- tidy_irf(irf_alt1, "FEDFUNDS", "PAYEMS", "Labor-First Ordering")
-
-irf_plot_df <- rbind(irf_df_ff_hwi, irf_df_ff_pay, irf_df_sp_hwi, irf_df_sp_pay)
+irf_plot_df <- rbind(
+  tidy_irf(irf_primary, "FEDFUNDS", "HWI",    "Primary Ordering"),
+  tidy_irf(irf_primary, "FEDFUNDS", "PAYEMS", "Primary Ordering"),
+  tidy_irf(irf_primary, "BAA10YM",  "HWI",    "Primary Ordering"),
+  tidy_irf(irf_primary, "BAA10YM",  "PAYEMS", "Primary Ordering")
+)
 irf_plot_df$PanelLabel <- factor(
   paste0(irf_plot_df$Impulse, " -> ", irf_plot_df$Response),
-  levels = c(
-    "FEDFUNDS -> HWI",
-    "FEDFUNDS -> PAYEMS",
-    "BAA10YM -> HWI",
-    "BAA10YM -> PAYEMS"
-  ),
-  labels = c(
-    "(a) FEDFUNDS -> HWI",
-    "(b) FEDFUNDS -> PAYEMS",
-    "(c) BAA10YM -> HWI",
-    "(d) BAA10YM -> PAYEMS"
-  )
+  levels = c("FEDFUNDS -> HWI", "FEDFUNDS -> PAYEMS", "BAA10YM -> HWI", "BAA10YM -> PAYEMS"),
+  labels = c("(a) FEDFUNDS -> HWI", "(b) FEDFUNDS -> PAYEMS", "(c) BAA10YM -> HWI", "(d) BAA10YM -> PAYEMS")
 )
 
-# Plot Publication IRFs (Figure 2: IEEE Single Column 3.5in)
-p_irf <- ggplot(irf_plot_df, aes(x = Horizon, y = Point)) +
-  geom_ribbon(aes(ymin = Lower, ymax = Upper), fill = "#2980B9", alpha = 0.22) +
-  geom_line(color = "#1F618D", linewidth = 0.75) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "#7F8C8D", linewidth = 0.4) +
-  facet_wrap(~PanelLabel, scales = "free_y", ncol = 2) +
-  labs(
-    x = "Forecast Horizon (Months)",
-    y = "Orthogonalized Response"
-  ) +
-  theme_minimal(base_size = 8.5) +
-  theme(
-    strip.text = element_text(face = "bold", size = 8),
-    strip.background = element_rect(fill = "#F2F4F4", color = NA),
-    panel.grid.minor = element_blank(),
-    panel.spacing = unit(0.5, "lines"),
-    axis.title = element_text(size = 8),
-    axis.text = element_text(size = 7),
-    plot.margin = margin(t = 4, r = 6, b = 4, l = 4, "pt")
-  )
+# Unified Figure 2 builder (Print 3.5 in & Web 4.4 in — ZERO strip clipping!)
+build_fig2 <- function(is_web = FALSE) {
+  th <- if (is_web) theme_web_wide() else theme_ieee_print()
+  ggplot(irf_plot_df, aes(x = Horizon, y = Point)) +
+    geom_ribbon(aes(ymin = Lower, ymax = Upper), fill = PAL$band68, alpha = 0.28) +
+    geom_line(color = PAL$navy, linewidth = if (is_web) 0.85 else 0.65) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = PAL$gray, linewidth = 0.35) +
+    facet_wrap(~PanelLabel, scales = "free_y", ncol = 2) +
+    labs(x = "Forecast Horizon (Months)", y = "Orthogonalized Response") +
+    th +
+    theme(
+      strip.text = element_text(face = "bold", size = if (is_web) 9.0 else 6.2,
+                                margin = margin(t = 2, b = 2, l = 1, r = 1))
+    )
+}
 
-ggsave("outputs/figures/fig2_structural_irfs.pdf", p_irf, width = 3.5, height = 2.8)
-ggsave("outputs/figures/fig2_structural_irfs.png", p_irf, width = 3.5, height = 2.8, dpi = 300)
+p_irf_print <- build_fig2(is_web = FALSE)
+ggsave("outputs/figures/fig2_structural_irfs.pdf", p_irf_print, width = 3.5, height = 2.8)
+ggsave("outputs/figures/fig2_structural_irfs.png", p_irf_print, width = 3.5, height = 2.8, dpi = 300)
 
-# Ordering Robustness Comparison (Figure 3: IEEE Single Column 3.5in)
+p_irf_web <- build_fig2(is_web = TRUE)
+ggsave("outputs/figures/fig2_web_structural_irfs.png", p_irf_web, width = 4.6, height = 3.6, dpi = 300)
+file.copy("outputs/figures/fig2_web_structural_irfs.png", "docs/assets/images/fig2_structural_irfs.png", overwrite = TRUE)
+
+# Unified Figure 3 builder (Ordering Robustness — Print 3.5 in & Web 4.6 in)
 comp_df <- rbind(
-  cbind(irf_df_ff_hwi, Ordering = "Baseline [Policy First]"),
-  cbind(irf_alt1_ff_hwi, Ordering = "Alternative [Labor First]"),
-  cbind(irf_df_ff_pay, Ordering = "Baseline [Policy First]"),
-  cbind(irf_alt1_ff_pay, Ordering = "Alternative [Labor First]")
+  cbind(tidy_irf(irf_primary, "FEDFUNDS", "HWI"),    Ordering = "Baseline (Policy First)"),
+  cbind(tidy_irf(irf_alt1,    "FEDFUNDS", "HWI"),    Ordering = "Alternative (Labor First)"),
+  cbind(tidy_irf(irf_primary, "FEDFUNDS", "PAYEMS"), Ordering = "Baseline (Policy First)"),
+  cbind(tidy_irf(irf_alt1,    "FEDFUNDS", "PAYEMS"), Ordering = "Alternative (Labor First)")
 )
 comp_df$ResponseVar <- ifelse(comp_df$Response == "HWI", "(a) Job Openings (HWI)", "(b) Payrolls (PAYEMS)")
 
-p_robust_irf <- ggplot(comp_df, aes(x = Horizon, y = Point, color = Ordering, linetype = Ordering)) +
-  geom_line(linewidth = 0.75) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "#7F8C8D", linewidth = 0.4) +
-  facet_wrap(~ResponseVar, scales = "free_y", ncol = 2) +
-  scale_color_manual(values = c("Baseline [Policy First]" = "#1F618D", "Alternative [Labor First]" = "#C0392B")) +
-  scale_linetype_manual(values = c("Baseline [Policy First]" = "solid", "Alternative [Labor First]" = "dashed")) +
-  labs(
-    x = "Forecast Horizon (Months)",
-    y = "Impulse Response",
-    color = "Ordering",
-    linetype = "Ordering"
-  ) +
-  theme_minimal(base_size = 8.5) +
-  theme(
-    legend.position = "top",
-    legend.text = element_text(size = 7),
-    legend.title = element_text(size = 7.5, face = "bold"),
-    legend.margin = margin(b = -2),
-    strip.text = element_text(face = "bold", size = 8),
-    strip.background = element_rect(fill = "#F2F4F4", color = NA),
-    panel.grid.minor = element_blank(),
-    panel.spacing = unit(0.5, "lines"),
-    axis.title = element_text(size = 8),
-    axis.text = element_text(size = 7),
-    plot.margin = margin(t = 2, r = 6, b = 4, l = 4, "pt")
-  )
+build_fig3 <- function(is_web = FALSE) {
+  th <- if (is_web) theme_web_wide() else theme_ieee_print()
+  ggplot(comp_df, aes(x = Horizon, y = Point, color = Ordering, linetype = Ordering)) +
+    geom_line(linewidth = if (is_web) 0.85 else 0.65) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = PAL$gray, linewidth = 0.35) +
+    facet_wrap(~ResponseVar, scales = "free_y", ncol = 2) +
+    scale_color_manual(values = c("Baseline (Policy First)" = PAL$navy, "Alternative (Labor First)" = PAL$red)) +
+    scale_linetype_manual(values = c("Baseline (Policy First)" = "solid", "Alternative (Labor First)" = "dashed")) +
+    guides(color = guide_legend(nrow = 1), linetype = guide_legend(nrow = 1)) +
+    labs(x = "Forecast Horizon (Months)", y = "Impulse Response", color = NULL, linetype = NULL) +
+    th +
+    theme(
+      strip.text = element_text(face = "bold", size = if (is_web) 9.0 else 6.4),
+      legend.text = element_text(size = if (is_web) 8.8 else 6.2)
+    )
+}
 
-ggsave("outputs/figures/fig3_ordering_robustness_irf.pdf", p_robust_irf, width = 3.5, height = 2.4)
-ggsave("outputs/figures/fig3_ordering_robustness_irf.png", p_robust_irf, width = 3.5, height = 2.4, dpi = 300)
+p_rob_print <- build_fig3(is_web = FALSE)
+ggsave("outputs/figures/fig3_ordering_robustness_irf.pdf", p_rob_print, width = 3.5, height = 2.4)
+ggsave("outputs/figures/fig3_ordering_robustness_irf.png", p_rob_print, width = 3.5, height = 2.4, dpi = 300)
+
+p_rob_web <- build_fig3(is_web = TRUE)
+ggsave("outputs/figures/fig3_web_ordering_robustness.png", p_rob_web, width = 4.6, height = 3.6, dpi = 300)
+file.copy("outputs/figures/fig3_web_ordering_robustness.png", "docs/assets/images/fig3_ordering_robustness_irf.png", overwrite = TRUE)
 
 # ------------------------------------------------------------------------------
-# 6. Waggoner-Zha (1999) Conditional Forecasting Framework
+# 6. Waggoner-Zha (1999) Conditional Forecasting Engine
+#    Implements BOTH:
+#      (a) Exact Minimum-MSE All-Shocks Projection (Waggoner & Zha 1999, Eq. 11;
+#          Banbura et al. 2015) — strictly invariant to Cholesky ordering!
+#      (b) Structural-Policy-Shocks-Only Projection (setting non-policy shocks = 0)
 # ------------------------------------------------------------------------------
-# Conditioning Block C: {FEDFUNDS, M2SL, BAA10YM} (indices 1, 2, 3)
-# Target Block T    : {HWI, PAYEMS}           (indices 5, 6)
-# Intermediate Block: {INDPRO}                (index 4)
-#
-# Procedure:
-# Over H = 46 months (2022-11 to 2026-08):
-# 1. Unconditional baseline forecast: Y_hat^{unc}_{t+h} = \sum_{j=1}^p A_j Y_{t+h-j} + c
-# 2. Structural conditional forecast: find sequences of shocks {e_{1..3, t+h}} that match
-#    the exact realized paths of FEDFUNDS, M2SL, BAA10YM over post-2022, while setting
-#    exogenous structural shocks to labor {e_{5, t+h}, e_{6, t+h}} = 0!
-#    Then compute the conditional expectation of HWI and PAYEMS given the policy paths!
-
-H <- nrow(Y_test)
 cond_idx <- c(1, 2, 3) # FEDFUNDS, M2SL, BAA10YM
-target_idx <- c(5, 6)  # HWI, PAYEMS
-
-A_est <- Acoef(var_baseline) # list of p matrices (k x k)
-c_est <- sapply(var_baseline$varresult, function(eq) coef(eq)["const"]) # k x 1
-P_chol <- t(chol(Sigma_res)) # Lower triangular Cholesky factor: Sigma = P P'
-
-# Simulation of unconditional dynamic forecast
-Y_unc <- matrix(0, nrow = H, ncol = k)
-colnames(Y_unc) <- var_names
-
-# Presample history for forecast initiation: last p rows of training
 hist_init <- Y_train[(T_tr - p_opt + 1):T_tr, ]
 
-for (h in 1:H) {
-  pred_h <- c_est
-  for (j in 1:p_opt) {
-    lag_val <- if ((h - j) <= 0) {
-      hist_init[p_opt + (h - j), ]
-    } else {
-      Y_unc[h - j, ]
+compute_wz <- function(v_obj, Y_init, Y_eval, cond_idx, mode = c("min_mse", "structural")) {
+  mode <- match.arg(mode)
+  A_est <- Acoef(v_obj)
+  c_est <- sapply(v_obj$varresult, function(eq) coef(eq)["const"])
+  E_v   <- residuals(v_obj)
+  n_par <- length(coef(v_obj$varresult[[1]]))
+  Sig_v <- crossprod(E_v) / (nrow(E_v) - n_par)
+  P_c   <- t(chol(Sig_v))
+  p_v   <- length(A_est)
+  k_v   <- ncol(Y_eval)
+  H_v   <- nrow(Y_eval)
+  n_c   <- length(cond_idx)
+
+  Y_unc <- matrix(0, H_v, k_v); colnames(Y_unc) <- colnames(Y_eval)
+  for (h in 1:H_v) {
+    pr <- c_est
+    for (j in 1:p_v) {
+      lv <- if ((h - j) <= 0) Y_init[p_v + (h - j), ] else Y_unc[h - j, ]
+      pr <- pr + A_est[[j]] %*% lv
     }
-    pred_h <- pred_h + A_est[[j]] %*% lag_val
+    Y_unc[h, ] <- pr
   }
-  Y_unc[h, ] <- pred_h
-}
 
-# Waggoner-Zha Exact Conditional Forecast
-# State-space representation: Y_{t+h} = Y^{unc}_{t+h} + \sum_{s=1}^h M_{h-s} P eta_s
-# Compute impulse response multipliers M_m (unorthogonalized MA representation)
-M_mats <- vector("list", H)
-M_mats[[1]] <- diag(k)
-for (m in 2:H) {
-  M_m <- matrix(0, k, k)
-  for (j in 1:min(p_opt, m - 1)) {
-    M_m <- M_m + A_est[[j]] %*% M_mats[[m - j]]
+  M_mats <- vector("list", H_v); M_mats[[1]] <- diag(k_v)
+  for (m in 2:H_v) {
+    Mm <- matrix(0, k_v, k_v)
+    for (j in 1:min(p_v, m - 1)) Mm <- Mm + A_est[[j]] %*% M_mats[[m - j]]
+    M_mats[[m]] <- Mm
   }
-  M_mats[[m]] <- M_m
-}
 
-# Stack condition equations:
-# For conditioning variables i in cond_idx at step h:
-# Y_{i, h} - Y^{unc}_{i, h} = \sum_{s=1}^h [M_{h-s} P]_{i, 1:3} eta_{C, s}
-# Let n_c = 3. Total constraints = H * n_c. Total shocks = H * n_c.
-n_c <- length(cond_idx)
-R_mat <- matrix(0, nrow = H * n_c, ncol = H * n_c)
-y_gap <- numeric(H * n_c)
-
-row_cnt <- 1
-for (h in 1:H) {
-  for (ci in 1:n_c) {
-    c_var <- cond_idx[ci]
-    y_gap[row_cnt] <- Y_test[h, c_var] - Y_unc[h, c_var]
-    
-    # Fill coefficients for eta_s (s = 1..h)
-    for (s in 1:h) {
-      M_hs <- M_mats[[h - s + 1]]
-      # Column index in eta_vector for shock at time s, component cj (1..n_c)
-      for (cj in 1:n_c) {
-        col_idx <- (s - 1) * n_c + cj
-        R_mat[row_cnt, col_idx] <- (M_hs %*% P_chol)[c_var, cond_idx[cj]]
+  if (mode == "min_mse") {
+    R <- matrix(0, H_v * n_c, H_v * k_v); r <- numeric(H_v * n_c); rc <- 1
+    for (h in 1:H_v) {
+      for (ci in 1:n_c) {
+        cv <- cond_idx[ci]
+        r[rc] <- Y_eval[h, cv] - Y_unc[h, cv]
+        for (s in 1:h) R[rc, ((s - 1) * k_v + 1):(s * k_v)] <- (M_mats[[h - s + 1]] %*% P_c)[cv, ]
+        rc <- rc + 1
       }
     }
-    row_cnt <- row_cnt + 1
+    eta_all <- as.numeric(t(R) %*% solve(R %*% t(R), r))
+    Y_cond <- Y_unc
+    for (h in 1:H_v) {
+      adj <- rep(0, k_v)
+      for (s in 1:h) adj <- adj + as.numeric(M_mats[[h - s + 1]] %*% P_c %*% eta_all[((s - 1) * k_v + 1):(s * k_v)])
+      Y_cond[h, ] <- Y_unc[h, ] + adj
+    }
+  } else {
+    R <- matrix(0, H_v * n_c, H_v * n_c); r <- numeric(H_v * n_c); rc <- 1
+    for (h in 1:H_v) {
+      for (ci in 1:n_c) {
+        cv <- cond_idx[ci]
+        r[rc] <- Y_eval[h, cv] - Y_unc[h, cv]
+        for (s in 1:h) {
+          MP <- M_mats[[h - s + 1]] %*% P_c
+          for (cj in 1:n_c) R[rc, (s - 1) * n_c + cj] <- MP[cv, cond_idx[cj]]
+        }
+        rc <- rc + 1
+      }
+    }
+    eta_c <- solve(R, r)
+    Y_cond <- Y_unc
+    for (h in 1:H_v) {
+      adj <- rep(0, k_v)
+      for (s in 1:h) {
+        es <- rep(0, k_v); es[cond_idx] <- eta_c[((s - 1) * n_c + 1):(s * n_c)]
+        adj <- adj + as.numeric(M_mats[[h - s + 1]] %*% P_c %*% es)
+      }
+      Y_cond[h, ] <- Y_unc[h, ] + adj
+    }
   }
+  colnames(Y_cond) <- colnames(Y_eval)
+  list(Y_unc = Y_unc, Y_cond = Y_cond)
 }
 
-# Solve for the unique structural conditioning shocks eta_C
-eta_C <- solve(R_mat, y_gap)
+wz_base_mmse   <- compute_wz(var_baseline,     hist_init, Y_test, cond_idx, mode = "min_mse")
+wz_base_struct <- compute_wz(var_baseline,     hist_init, Y_test, cond_idx, mode = "structural")
+wz_uncov_mmse  <- compute_wz(var_uncontrolled, hist_init, Y_test, cond_idx, mode = "min_mse")
 
-# Reconstruct the conditional forecasts for all variables
-Y_cond <- Y_unc
-for (h in 1:H) {
-  cond_adj <- rep(0, k)
-  for (s in 1:h) {
-    M_hs <- M_mats[[h - s + 1]]
-    eta_s_full <- rep(0, k)
-    eta_s_full[cond_idx] <- eta_C[((s - 1) * n_c + 1):(s * n_c)]
-    cond_adj <- cond_adj + as.numeric(M_hs %*% P_chol %*% eta_s_full)
-  }
-  Y_cond[h, ] <- Y_unc[h, ] + cond_adj
-}
+Y_unc  <- wz_base_mmse$Y_unc
+Y_cond <- wz_base_mmse$Y_cond
 
-# Verify conditioning accuracy (gap on FEDFUNDS, M2SL, BAA10YM must be ~0)
 max_cond_error <- max(abs(Y_cond[, cond_idx] - Y_test[, cond_idx]))
 cat("======================================================================\n")
 cat("6. WAGGONER-ZHA CONDITIONAL FORECAST ACCURACY CHECK\n")
@@ -482,58 +439,96 @@ cat("======================================================================\n")
 cat(sprintf("Maximum absolute error on conditioning variables: %.2e\n", max_cond_error))
 
 # ------------------------------------------------------------------------------
-# 7. Forecast Error Analysis & Newey-West HAC Structural Break Tests
+# 7. Newey-West HAC Structural Break Tests (Newey & West 1987; bandwidth b = 3)
 # ------------------------------------------------------------------------------
 dates_test <- test_df$date
 
-# Unconditional and Conditional forecast errors on target variables
-err_unc_hwi <- Y_test[, "HWI"] - Y_unc[, "HWI"]
-err_cnd_hwi <- Y_test[, "HWI"] - Y_cond[, "HWI"]
-
+err_unc_hwi <- Y_test[, "HWI"]    - Y_unc[, "HWI"]
+err_cnd_hwi <- Y_test[, "HWI"]    - Y_cond[, "HWI"]
 err_unc_pay <- Y_test[, "PAYEMS"] - Y_unc[, "PAYEMS"]
 err_cnd_pay <- Y_test[, "PAYEMS"] - Y_cond[, "PAYEMS"]
 
-# Newey-West HAC regression: test whether post-2022 conditional error mean != 0
-# e_t = alpha + u_t, test H0: alpha = 0 with Newey-West HAC standard error
-hac_test <- function(err_vec, name) {
+hac_test <- function(err_vec, ref_unc, name) {
   mod <- lm(err_vec ~ 1)
-  # Lag truncation per Newey-West / Enders: floor(4 * (T/100)^(2/9))
-  bw <- floor(4 * (length(err_vec) / 100)^(2/9))
+  bw <- floor(4 * (length(err_vec) / 100)^(2/9)) # b = 3 for H = 46
   vcov_hac <- NeweyWest(mod, lag = max(1, bw), prewhite = FALSE)
   ct <- coeftest(mod, vcov. = vcov_hac)
   data.frame(
-    Target = name,
+    Target     = name,
     Mean_Error = round(ct[1, "Estimate"], 4),
-    HAC_SE = round(ct[1, "Std. Error"], 4),
-    t_ratio = round(ct[1, "t value"], 3),
-    p_value = signif(ct[1, "Pr(>|t|)"], 4),
-    RMSE_Unc = round(sqrt(mean((if (grepl("HWI", name)) err_unc_hwi else err_unc_pay)^2)), 4),
-    RMSE_Cond = round(sqrt(mean(err_vec^2)), 4),
+    HAC_SE     = round(ct[1, "Std. Error"], 4),
+    t_ratio    = round(ct[1, "t value"], 3),
+    p_value    = signif(ct[1, "Pr(>|t|)"], 4),
+    RMSE_Unc   = round(sqrt(mean(ref_unc^2)), 4),
+    RMSE_Cond  = round(sqrt(mean(err_vec^2)), 4),
     stringsAsFactors = FALSE
   )
 }
 
 hac_table <- rbind(
-  hac_test(err_unc_hwi, "Job Openings (HWI) [Unconditional]"),
-  hac_test(err_cnd_hwi, "Job Openings (HWI) [Conditional on Policy]"),
-  hac_test(err_unc_pay, "Nonfarm Payrolls (PAYEMS) [Unconditional]"),
-  hac_test(err_cnd_pay, "Nonfarm Payrolls (PAYEMS) [Conditional on Policy]")
+  hac_test(err_unc_hwi, err_unc_hwi, "Job Openings (HWI) [Unconditional]"),
+  hac_test(err_cnd_hwi, err_unc_hwi, "Job Openings (HWI) [Policy-Conditioned]"),
+  hac_test(err_unc_pay, err_unc_pay, "Nonfarm Payrolls (PAYEMS) [Unconditional]"),
+  hac_test(err_cnd_pay, err_unc_pay, "Nonfarm Payrolls (PAYEMS) [Policy-Conditioned]")
 )
 
 cat("\n======================================================================\n")
-cat("7. NEWEY-WEST HAC STRUCTURAL BREAK TESTS ON FORECAST ERRORS\n")
+cat("7. NEWEY-WEST HAC STRUCTURAL BREAK TESTS (COVID-CONTROLLED VAR(2))\n")
 cat("======================================================================\n")
 print(hac_table, row.names = FALSE)
 write.csv(hac_table, "outputs/econometrics/table_hac_break_tests.csv", row.names = FALSE)
 
-# ------------------------------------------------------------------------------
-# 8. Publication Figure 4: Conditional vs. Unconditional Counterfactual Paths
-# ------------------------------------------------------------------------------
-# Convert stationary transforms back to level trajectories from 2022-10 base
-base_hwi <- train_df$HWI[nrow(train_df)]       # 10447
-base_pay <- train_df$PAYEMS[nrow(train_df)]    # 153939
+# Format p-values cleanly for LaTeX
+fmt_p <- function(p) {
+  if (p < 0.001) {
+    ex <- floor(log10(p))
+    sprintf("%.2f \\times 10^{%d}", p / 10^ex, ex)
+  } else {
+    sprintf("%.3f", p)
+  }
+}
 
-# Cumulative levels
+tex_tab4 <- sprintf(
+"\\begin{table}[t]
+\\centering
+\\caption{Newey--West HAC Structural Break Tests on Post-2022 Errors}
+\\label{tab:hac_tests}
+\\begin{minipage}{\\columnwidth}
+\\centering
+\\fontsize{7.0pt}{8.4pt}\\selectfont
+\\setlength{\\tabcolsep}{2.3pt}
+\\begin{tabular}{lccccc}
+\\toprule
+\\textbf{Target \\& Regime} & $\\bar{e}$ & \\textbf{HAC SE} & $t$-\\textbf{ratio} & $p$-\\textbf{value} & \\textbf{RMSE} \\\\
+\\midrule
+\\multicolumn{6}{l}{\\textit{Job Openings (\\texttt{HWI}, Thousands of Openings/Month)}} \\\\
+Unconditional VAR(2) & $%.2f$ & $%.2f$ & $%.2f$ & $%s$ & $%.2f$ \\\\
+Policy-Conditioned & $\\mathbf{%.2f}$ & $\\mathbf{%.2f}$ & $\\mathbf{%.2f}$ & $\\mathbf{%s}$ & $%.2f$ \\\\
+\\midrule
+\\multicolumn{6}{l}{\\textit{Nonfarm Payrolls (\\texttt{PAYEMS}, Monthly \\%% Growth)}} \\\\
+Unconditional VAR(2) & $%+.3f$ & $%.3f$ & $%.2f$ & $%s$ & $%.3f$ \\\\
+Policy-Conditioned & $\\mathbf{%+.3f}$ & $\\mathbf{%.3f}$ & $\\mathbf{%.2f}$ & $\\mathbf{%s}$ & $%.3f$ \\\\
+\\bottomrule
+\\end{tabular}
+\\vskip 2pt
+{\\scriptsize \\textit{Notes}: COVID-controlled stationary VAR(2) (2020M3--2020M5 pulse dummies per Wei 2019, Sec.~2.7) evaluated over 2022M11--2026M8 ($H = 46$). Conditioning block $\\mathcal{C} = \\{\\text{FEDFUNDS}, \\text{M2SL}, \\text{BAA10YM}\\}$ via exact Waggoner--Zha (1999) projection. HAC SEs use Newey--West (1987) Bartlett kernel (bandwidth $b = 3$).\\par}
+\\end{minipage}
+\\end{table}
+",
+hac_table$Mean_Error[1], hac_table$HAC_SE[1], hac_table$t_ratio[1], fmt_p(hac_table$p_value[1]), hac_table$RMSE_Cond[1],
+hac_table$Mean_Error[2], hac_table$HAC_SE[2], hac_table$t_ratio[2], fmt_p(hac_table$p_value[2]), hac_table$RMSE_Cond[2],
+hac_table$Mean_Error[3], hac_table$HAC_SE[3], hac_table$t_ratio[3], fmt_p(hac_table$p_value[3]), hac_table$RMSE_Cond[3],
+hac_table$Mean_Error[4], hac_table$HAC_SE[4], hac_table$t_ratio[4], fmt_p(hac_table$p_value[4]), hac_table$RMSE_Cond[4]
+)
+cat(tex_tab4, file = "outputs/econometrics/table4_hac_break_tests.tex")
+
+# ------------------------------------------------------------------------------
+# 8. Publication Figure 4: Conditional Counterfactual Levels (Unified Punto!)
+#    Zero legend clipping: 2-row wrapped legend on 3.5 in print; 2-col widescreen web
+# ------------------------------------------------------------------------------
+base_hwi <- train_df$HWI[T_tr]
+base_pay <- train_df$PAYEMS[T_tr]
+
 lvl_real_hwi <- test_df$HWI
 lvl_unc_hwi  <- base_hwi + cumsum(Y_unc[, "HWI"])
 lvl_cnd_hwi  <- base_hwi + cumsum(Y_cond[, "HWI"])
@@ -542,97 +537,56 @@ lvl_real_pay <- test_df$PAYEMS
 lvl_unc_pay  <- base_pay * exp(cumsum(Y_unc[, "PAYEMS"] / 100))
 lvl_cnd_pay  <- base_pay * exp(cumsum(Y_cond[, "PAYEMS"] / 100))
 
+cat(sprintf("\nCumulative Level Outcomes (2026M8):\n"))
+cat(sprintf("  HWI   : Realized = %.0fk | Conditional = %.0fk (Gap = %.0fk, %.1f%%) | Unconditional = %.0fk\n",
+            lvl_real_hwi[H], lvl_cnd_hwi[H], lvl_real_hwi[H] - lvl_cnd_hwi[H],
+            100 * (lvl_real_hwi[H] / lvl_cnd_hwi[H] - 1), lvl_unc_hwi[H]))
+cat(sprintf("  PAYEMS: Realized = %.0fk | Conditional = %.0fk (Gap = %.0fk, %.1f%%) | Unconditional = %.0fk\n",
+            lvl_real_pay[H], lvl_cnd_pay[H], lvl_real_pay[H] - lvl_cnd_pay[H],
+            100 * (lvl_real_pay[H] / lvl_cnd_pay[H] - 1), lvl_unc_pay[H]))
+
 plot_traj_df <- rbind(
-  data.frame(date = dates_test, Value = lvl_real_hwi, Type = "Realized Post-2022", Series = "Job Openings (HWI, thousands)"),
-  data.frame(date = dates_test, Value = lvl_unc_hwi,  Type = "Unconditional VAR(2)", Series = "Job Openings (HWI, thousands)"),
-  data.frame(date = dates_test, Value = lvl_cnd_hwi,  Type = "Policy-Conditioned VAR(2)", Series = "Job Openings (HWI, thousands)"),
-  data.frame(date = dates_test, Value = lvl_real_pay, Type = "Realized Post-2022", Series = "Nonfarm Payrolls (PAYEMS, thousands)"),
-  data.frame(date = dates_test, Value = lvl_unc_pay,  Type = "Unconditional VAR(2)", Series = "Nonfarm Payrolls (PAYEMS, thousands)"),
-  data.frame(date = dates_test, Value = lvl_cnd_pay,  Type = "Policy-Conditioned VAR(2)", Series = "Nonfarm Payrolls (PAYEMS, thousands)")
+  data.frame(date = dates_test, Value = lvl_real_hwi, Type = "Realized Post-2022",       SeriesLabel = "(a) Job Openings (HWI, thousands)"),
+  data.frame(date = dates_test, Value = lvl_cnd_hwi,  Type = "Policy-Conditioned VAR(2)", SeriesLabel = "(a) Job Openings (HWI, thousands)"),
+  data.frame(date = dates_test, Value = lvl_unc_hwi,  Type = "Unconditional VAR(2)",     SeriesLabel = "(a) Job Openings (HWI, thousands)"),
+  data.frame(date = dates_test, Value = lvl_real_pay, Type = "Realized Post-2022",       SeriesLabel = "(b) Payroll Employment (PAYEMS, thousands)"),
+  data.frame(date = dates_test, Value = lvl_cnd_pay,  Type = "Policy-Conditioned VAR(2)", SeriesLabel = "(b) Payroll Employment (PAYEMS, thousands)"),
+  data.frame(date = dates_test, Value = lvl_unc_pay,  Type = "Unconditional VAR(2)",     SeriesLabel = "(b) Payroll Employment (PAYEMS, thousands)")
 )
+plot_traj_df$Type <- factor(plot_traj_df$Type, levels = c("Realized Post-2022", "Policy-Conditioned VAR(2)", "Unconditional VAR(2)"))
 
-plot_traj_df$SeriesLabel <- ifelse(
-  grepl("HWI", plot_traj_df$Series),
-  "(a) Job Openings (HWI, thousands)",
-  "(b) Payroll Employment (PAYEMS, thousands)"
-)
+build_fig4 <- function(is_web = FALSE) {
+  th <- if (is_web) theme_web_wide() else theme_ieee_print()
+  ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype = Type)) +
+    geom_line(linewidth = if (is_web) 0.95 else 0.70) +
+    facet_wrap(~SeriesLabel, scales = "free_y", ncol = if (is_web) 2 else 1) +
+    scale_color_manual(values = c(
+      "Realized Post-2022"        = PAL$red,
+      "Policy-Conditioned VAR(2)" = PAL$navy,
+      "Unconditional VAR(2)"      = PAL$gray
+    )) +
+    scale_linetype_manual(values = c(
+      "Realized Post-2022"        = "solid",
+      "Policy-Conditioned VAR(2)" = "dashed",
+      "Unconditional VAR(2)"      = "dotted"
+    )) +
+    scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+    scale_y_continuous(labels = comma) +
+    guides(
+      color    = guide_legend(nrow = if (is_web) 1 else 2, byrow = TRUE),
+      linetype = guide_legend(nrow = if (is_web) 1 else 2, byrow = TRUE)
+    ) +
+    labs(x = NULL, y = "Levels (Thousands)", color = NULL, linetype = NULL) +
+    th
+}
 
-p_traj <- ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype = Type)) +
-  geom_line(linewidth = 0.8) +
-  facet_wrap(~SeriesLabel, scales = "free_y", ncol = 1) +
-  scale_color_manual(values = c(
-    "Realized Post-2022" = "#C0392B",
-    "Policy-Conditioned VAR(2)" = "#1F618D",
-    "Unconditional VAR(2)" = "#7F8C8D"
-  )) +
-  scale_linetype_manual(values = c(
-    "Realized Post-2022" = "solid",
-    "Policy-Conditioned VAR(2)" = "dashed",
-    "Unconditional VAR(2)" = "dotted"
-  )) +
-  scale_x_date(date_breaks = "12 months", date_labels = "%b %Y") +
-  scale_y_continuous(labels = comma) +
-  labs(
-    x = NULL, y = "Levels (Thousands)",
-    color = "Trajectory", linetype = "Trajectory"
-  ) +
-  theme_minimal(base_size = 8.5) +
-  theme(
-    legend.position = "top",
-    legend.text = element_text(size = 7),
-    legend.title = element_text(size = 7.5, face = "bold"),
-    legend.margin = margin(b = -2),
-    strip.text = element_text(face = "bold", size = 8),
-    strip.background = element_rect(fill = "#F2F4F4", color = NA),
-    panel.grid.minor = element_blank(),
-    panel.spacing = unit(0.5, "lines"),
-    axis.title = element_text(size = 8),
-    axis.text = element_text(size = 7),
-    plot.margin = margin(t = 2, r = 6, b = 4, l = 4, "pt")
-  )
+p_traj_print <- build_fig4(is_web = FALSE)
+ggsave("outputs/figures/fig4_conditional_counterfactual_paths.pdf", p_traj_print, width = 3.5, height = 3.5)
+ggsave("outputs/figures/fig4_conditional_counterfactual_paths.png", p_traj_print, width = 3.5, height = 3.5, dpi = 300)
 
-ggsave("outputs/figures/fig4_conditional_counterfactual_paths.pdf", p_traj, width = 3.5, height = 3.6)
-ggsave("outputs/figures/fig4_conditional_counterfactual_paths.png", p_traj, width = 3.5, height = 3.6, dpi = 300)
-
-# Export Trajectory Data CSV
-write.csv(plot_traj_df, "outputs/econometrics/table_counterfactual_trajectories.csv", row.names = FALSE)
-
-# Generate Widescreen Web Figure (ncol = 2 horizontal aspect ratio ~ 2.05 : 1 for GitHub.io)
-p_traj_web <- ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype = Type)) +
-  geom_line(linewidth = 0.95) +
-  facet_wrap(~SeriesLabel, scales = "free_y", ncol = 2) +
-  scale_color_manual(values = c(
-    "Realized Post-2022" = "#C0392B",
-    "Policy-Conditioned VAR(2)" = "#1F618D",
-    "Unconditional VAR(2)" = "#7F8C8D"
-  )) +
-  scale_linetype_manual(values = c(
-    "Realized Post-2022" = "solid",
-    "Policy-Conditioned VAR(2)" = "dashed",
-    "Unconditional VAR(2)" = "dotted"
-  )) +
-  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y") +
-  scale_y_continuous(labels = comma) +
-  labs(
-    x = NULL, y = "Levels (Thousands)",
-    color = "Trajectory Specification", linetype = "Trajectory Specification"
-  ) +
-  theme_minimal(base_size = 11) +
-  theme(
-    legend.position = "top",
-    legend.text = element_text(size = 9.5),
-    legend.title = element_text(size = 10, face = "bold"),
-    legend.margin = margin(b = 4),
-    strip.text = element_text(face = "bold", size = 10.5),
-    strip.background = element_rect(fill = "#F8FAFC", color = "#E2E8F0"),
-    panel.grid.minor = element_blank(),
-    panel.spacing = unit(1.2, "lines"),
-    axis.title = element_text(size = 10),
-    axis.text = element_text(size = 9),
-    plot.margin = margin(t = 6, r = 12, b = 6, l = 8, "pt")
-  )
-
-ggsave("outputs/figures/fig4_web_counterfactuals.png", p_traj_web, width = 8.6, height = 4.2, dpi = 300)
+p_traj_web <- build_fig4(is_web = TRUE)
+ggsave("outputs/figures/fig4_web_counterfactuals.png", p_traj_web, width = 8.4, height = 3.9, dpi = 300)
 file.copy("outputs/figures/fig4_web_counterfactuals.png", "docs/assets/images/fig4_web_counterfactuals.png", overwrite = TRUE)
 
-cat("\nStep 2 completed successfully. All figures and tables exported to outputs/\n")
+write.csv(plot_traj_df, "outputs/econometrics/table_counterfactual_trajectories.csv", row.names = FALSE)
+cat("\nStep 2 completed successfully. All unified figures and tables exported.\n")

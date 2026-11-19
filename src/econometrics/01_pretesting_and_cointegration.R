@@ -23,6 +23,8 @@ suppressPackageStartupMessages({
   library(scales)
 })
 
+source("src/econometrics/theme_publication.R")
+
 dir.create("outputs/econometrics", recursive = TRUE, showWarnings = FALSE)
 
 # ------------------------------------------------------------------------------
@@ -401,26 +403,8 @@ write.csv(joh_results, "outputs/econometrics/table_johansen_cointegration.csv", 
 
 # ------------------------------------------------------------------------------
 # 5. Publication-Grade Diagnostic Figure: Multivariate Outlier Audit (COVID-19)
+#    Unified punto for IEEE print (3.5 in) and GitHub.io web widescreen (8.4 in)
 # ------------------------------------------------------------------------------
-p_mio <- ggplot(outlier_df, aes(x = date, y = J_MIO)) +
-  geom_segment(aes(xend = date, yend = 0), color = "#2C3E50", linewidth = 0.45, alpha = 0.85) +
-  geom_point(aes(color = J_MIO > bonf_cv_01), size = 1.6) +
-  scale_color_manual(values = c("FALSE" = "#2C3E50", "TRUE" = "#C0392B"), guide = "none") +
-  geom_hline(yintercept = bonf_cv_01, linetype = "dashed", color = "#C0392B", linewidth = 0.55) +
-  annotate("text", x = as.Date("2011-01-01"), y = bonf_cv_01 + 8,
-           label = sprintf("Bonferroni 1%% critical value (%.1f)", bonf_cv_01),
-           hjust = 0, size = 2.8, color = "#C0392B", fontface = "italic") +
-  annotate("text", x = as.Date("2020-04-01"), y = max(outlier_df$J_MIO) * 0.94,
-           label = "COVID-19 Shock\n(Mar–May 2020)", hjust = 1.15, size = 2.9,
-           color = "#C0392B", fontface = "bold") +
-  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
-  labs(title = "(a) Multivariate Innovational Outlier Statistic (Tsay–Peña–Pankratz)",
-       x = NULL, y = expression(J[I*","*h] == hat(epsilon)[h]^T * hat(Sigma)^{-1} * hat(epsilon)[h])) +
-  theme_minimal(base_size = 9.5) +
-  theme(panel.grid.minor = element_blank(),
-        plot.title = element_text(face = "bold", size = 9.5))
-
-# Panel (b): Standardized residual magnitude by variable during 2020M3-2020M5
 covid_rows <- outlier_df[outlier_df$date %in% as.Date(c("2020-03-01", "2020-04-01", "2020-05-01")), ]
 z_long <- do.call(rbind, lapply(c("FEDFUNDS", "M2SL", "BAA10YM", "INDPRO", "HWI", "PAYEMS"), function(v) {
   data.frame(
@@ -432,22 +416,59 @@ z_long <- do.call(rbind, lapply(c("FEDFUNDS", "M2SL", "BAA10YM", "INDPRO", "HWI"
 }))
 z_long$Variable <- factor(z_long$Variable, levels = c("FEDFUNDS", "M2SL", "BAA10YM", "INDPRO", "HWI", "PAYEMS"))
 
-p_z <- ggplot(z_long, aes(x = Variable, y = Z_score, fill = Month)) +
-  geom_col(position = position_dodge(width = 0.72), width = 0.65) +
-  geom_hline(yintercept = c(-3, 3), linetype = "dotted", color = "#7F8C8D", linewidth = 0.45) +
-  geom_hline(yintercept = 0, color = "#2C3E50", linewidth = 0.35) +
-  scale_fill_manual(values = c("2020-03" = "#1F618D", "2020-04" = "#C0392B", "2020-05" = "#D4AC0D")) +
-  labs(title = "(b) Standardized VAR(2) Innovations During COVID-19 Onset",
-       x = NULL, y = "Standardized Residual (z-score)", fill = "Month") +
-  theme_minimal(base_size = 9.5) +
-  theme(panel.grid.minor = element_blank(),
-        plot.title = element_text(face = "bold", size = 9.5),
-        legend.position = "top")
+build_fig1 <- function(is_web = FALSE) {
+  txt_sz <- if (is_web) 3.0 else 2.2
+  pt_sz  <- if (is_web) 1.7 else 1.0
+  lw_seg <- if (is_web) 0.45 else 0.30
+  th     <- if (is_web) theme_web_wide() else theme_ieee_print()
+  ttl_a  <- "(a) MIO Statistic (Tsay-Pena-Pankratz)"
+  ttl_b  <- "(b) Standardized Innovations (Mar-May 2020)"
 
-fig_out <- p_mio / p_z + plot_layout(heights = c(1.1, 1.0))
+  p_mio <- ggplot(outlier_df, aes(x = date, y = J_MIO)) +
+    geom_segment(aes(xend = date, yend = 0), color = PAL$slate, linewidth = lw_seg, alpha = 0.85) +
+    geom_point(aes(color = J_MIO > bonf_cv_01), size = pt_sz) +
+    scale_color_manual(values = c("FALSE" = PAL$slate, "TRUE" = PAL$red), guide = "none") +
+    geom_hline(yintercept = bonf_cv_01, linetype = "dashed", color = PAL$red, linewidth = 0.45) +
+    annotate("text", x = as.Date("2010-06-01"), y = bonf_cv_01 + 10,
+             label = sprintf("Bonferroni 1%% CV (%.2f)", bonf_cv_01),
+             hjust = 0, size = txt_sz, color = PAL$red, fontface = "italic") +
+    annotate("text", x = as.Date("2020-01-01"), y = max(outlier_df$J_MIO) * 0.92,
+             label = "COVID-19\n(Mar-May 2020)", hjust = 1.08, size = txt_sz,
+             color = PAL$red, fontface = "bold", lineheight = 0.92) +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    labs(title = ttl_a, x = NULL, y = expression(paste("MIO ", J[I*","*h]))) +
+    th +
+    theme(plot.title = element_text(face = "bold", size = if (is_web) 10.0 else 7.2, margin = margin(b = 2)))
+
+  p_z <- ggplot(z_long, aes(x = Variable, y = Z_score, fill = Month)) +
+    geom_col(position = position_dodge(width = 0.72), width = 0.65) +
+    geom_hline(yintercept = c(-3, 3), linetype = "dotted", color = PAL$gray, linewidth = 0.4) +
+    geom_hline(yintercept = 0, color = PAL$slate, linewidth = 0.3) +
+    scale_fill_manual(values = c("2020-03" = PAL$navy, "2020-04" = PAL$red, "2020-05" = PAL$amber)) +
+    labs(title = ttl_b, x = NULL, y = "Residual z-score", fill = "Month") +
+    th +
+    theme(
+      plot.title = element_text(face = "bold", size = if (is_web) 10.0 else 7.2, margin = margin(b = 2)),
+      legend.position = "bottom",
+      axis.text.x = element_text(size = if (is_web) 8.8 else 6.0)
+    )
+
+  if (is_web) {
+    (p_mio | p_z) + plot_layout(widths = c(1.1, 1.0))
+  } else {
+    (p_mio / p_z) + plot_layout(heights = c(1.05, 1.0))
+  }
+}
+
 dir.create("outputs/figures", recursive = TRUE, showWarnings = FALSE)
-ggsave("outputs/figures/fig1_covid_outlier_audit.pdf", fig_out, width = 7.0, height = 5.2)
-ggsave("outputs/figures/fig1_covid_outlier_audit.png", fig_out, width = 7.0, height = 5.2, dpi = 300)
-ggsave("outputs/econometrics/fig_covid_outlier_audit.png", fig_out, width = 7.0, height = 5.2, dpi = 300)
+dir.create("docs/assets/images", recursive = TRUE, showWarnings = FALSE)
 
-cat("\nSaved all Step 1 tables and outlier diagnostic figure to outputs/\n")
+fig_out_print <- build_fig1(is_web = FALSE)
+ggsave("outputs/figures/fig1_covid_outlier_audit.pdf", fig_out_print, width = 3.5, height = 3.3)
+ggsave("outputs/figures/fig1_covid_outlier_audit.png", fig_out_print, width = 3.5, height = 3.3, dpi = 300)
+
+fig_out_web <- build_fig1(is_web = TRUE)
+ggsave("outputs/figures/fig1_web_outlier_audit.png", fig_out_web, width = 8.4, height = 3.9, dpi = 300)
+file.copy("outputs/figures/fig1_web_outlier_audit.png", "docs/assets/images/fig1_covid_outlier_audit.png", overwrite = TRUE)
+
+cat("\nSaved all Step 1 tables and unified outlier diagnostic figures to outputs/\n")

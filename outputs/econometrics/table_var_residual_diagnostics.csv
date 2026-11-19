@@ -1,6 +1,6 @@
 "Diagnostic_Test","Test_Statistic","Degrees_of_Freedom","p_value"
-"Portmanteau Autocorrelation (PT.asymptotic, h=12)",478.67,360,2.7e-05
-"Multivariate ARCH Test (lags=4)",2277.8,1764,9.99e-16
-"Multivariate Jarque-Bera Normality",10924.91,12,0
-"Skewness Test",493.94,6,0
-"Kurtosis Test",10430.97,6,0
+"Portmanteau Autocorrelation (PT.asymptotic, h=12)",505.28,360,6.34e-07
+"Multivariate ARCH Test (lags=4)",2168.37,1764,1.02e-10
+"Multivariate Jarque-Bera Normality",884.91,12,0
+"Skewness Test",64.2,6,6.28e-12
+"Kurtosis Test",820.71,6,0

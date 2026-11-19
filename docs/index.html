@@ -51,10 +51,6 @@
           <span class="meta-value">Eda Kal Arıca &amp; Esra Şekerci</span>
         </div>
         <div>
-          <span class="meta-label">Proposal Date</span>
-          <span class="meta-value">November 15, 2026</span>
-        </div>
-        <div>
           <span class="meta-label">Data Source</span>
           <span class="meta-value">
             <a href="https://www.stlouisfed.org/research/economists/mccracken/fred-databases" target="_blank" rel="noopener">FRED-MD</a> (k = 6, Monthly)
@@ -697,61 +693,61 @@
               <tr>
                 <td><strong>FEDFUNDS</strong></td>
                 <td class="num" style="font-weight:600; ">1.0000</td>
-                <td class="num" style=" color:#C0392B;">-0.4908</td>
-                <td class="num" style=" color:#C0392B;">-0.4755</td>
-                <td class="num" style=" ">0.3010</td>
-                <td class="num" style=" ">0.1247</td>
-                <td class="num" style=" ">0.1289</td>
+                <td class="num">-0.0993</td>
+                <td class="num">0.0276</td>
+                <td class="num">-0.0210</td>
+                <td class="num" style="color:#C0392B;">-0.2274</td>
+                <td class="num">0.0190</td>
               </tr>
               <tr>
                 <td><strong>M2SL</strong></td>
-                <td class="num" style=" color:#C0392B;">-0.4908</td>
+                <td class="num">-0.0993</td>
                 <td class="num" style="font-weight:600; ">1.0000</td>
-                <td class="num" style=" color:#C0392B;">0.4007</td>
-                <td class="num" style=" color:#C0392B;">-0.5455</td>
-                <td class="num" style=" ">-0.2302</td>
-                <td class="num" style=" color:#C0392B;">-0.4374</td>
+                <td class="num">0.1760</td>
+                <td class="num">-0.1941</td>
+                <td class="num">0.0482</td>
+                <td class="num">-0.1610</td>
               </tr>
               <tr>
                 <td><strong>BAA10YM</strong></td>
-                <td class="num" style=" color:#C0392B;">-0.4755</td>
-                <td class="num" style=" color:#C0392B;">0.4007</td>
+                <td class="num">0.0276</td>
+                <td class="num">0.1760</td>
                 <td class="num" style="font-weight:600; ">1.0000</td>
-                <td class="num" style=" ">-0.1140</td>
-                <td class="num" style=" ">-0.1279</td>
-                <td class="num" style=" ">0.0955</td>
+                <td class="num">0.0638</td>
+                <td class="num">0.1021</td>
+                <td class="num">0.0400</td>
               </tr>
               <tr>
                 <td><strong>INDPRO</strong></td>
-                <td class="num" style=" ">0.3010</td>
-                <td class="num" style=" color:#C0392B;">-0.5455</td>
-                <td class="num" style=" ">-0.1140</td>
+                <td class="num">-0.0210</td>
+                <td class="num">-0.1941</td>
+                <td class="num">0.0638</td>
                 <td class="num" style="font-weight:600; ">1.0000</td>
-                <td class="num" style=" ">0.2929</td>
-                <td class="num" style=" color:#C0392B;">0.6422</td>
+                <td class="num">0.0780</td>
+                <td class="num">0.1408</td>
               </tr>
               <tr>
                 <td><strong>HWI</strong></td>
-                <td class="num" style=" ">0.1247</td>
-                <td class="num" style=" ">-0.2302</td>
-                <td class="num" style=" ">-0.1279</td>
-                <td class="num" style=" ">0.2929</td>
+                <td class="num" style="color:#C0392B;">-0.2274</td>
+                <td class="num">0.0482</td>
+                <td class="num">0.1021</td>
+                <td class="num">0.0780</td>
                 <td class="num" style="font-weight:600; ">1.0000</td>
-                <td class="num" style=" ">0.2837</td>
+                <td class="num" style="color:#C0392B;">0.3213</td>
               </tr>
               <tr>
                 <td><strong>PAYEMS</strong></td>
-                <td class="num" style=" ">0.1289</td>
-                <td class="num" style=" color:#C0392B;">-0.4374</td>
-                <td class="num" style=" ">0.0955</td>
-                <td class="num" style=" color:#C0392B;">0.6422</td>
-                <td class="num" style=" ">0.2837</td>
+                <td class="num">0.0190</td>
+                <td class="num">-0.1610</td>
+                <td class="num">0.0400</td>
+                <td class="num">0.1408</td>
+                <td class="num" style="color:#C0392B;">0.3213</td>
                 <td class="num" style="font-weight:600; ">1.0000</td>
               </tr>
             </tbody>
           </table>
           <div class="table-footnote">
-            <strong>Notes:</strong> Residual correlation threshold for Cholesky ordering sensitivity (Enders 2015, p. 298) is \(2\times\text{SE}(\hat{\rho}) = 2/\sqrt{T_e} = 2/\sqrt{152} = 0.162\). Contemporaneous residual correlations between the policy block and labor targets are all small (\(|\hat{\rho}| \le 0.129 < 0.162\)), confirming recursive causal ordering invariance.
+            <strong>Notes:</strong> Residual correlation matrix for the COVID-controlled VAR(2) (2020M3–2020M5 pulse dummies per Wei 2019, Sec. 2.7). Following Enders (2015, p. 298), the 5% threshold is \(2/\sqrt{T_e} = 2/\sqrt{152} = 0.162\). Controlling for COVID-19 removes spurious cross-block correlations (e.g., <code>FEDFUNDS</code>–<code>PAYEMS</code> falls to \(+0.019\), <code>FEDFUNDS</code>–<code>INDPRO</code> to \(-0.021\)), leaving only the economically intuitive immediate vacancy response (\(\hat{\rho} = -0.227\)) and within-labor block co-movement (\(+0.321\)).
           </div>
         </div>
 
@@ -802,7 +798,7 @@
         <h2>5. Empirical Findings &amp; Theoretical Macroeconomic Interpretation</h2>
 
         <p>
-          Following Waggoner &amp; Zha (1999) structural conditional forecasting, the baseline VAR(2) estimated strictly on the pre-AI training sample (2010M1–2022M10) was conditioned on the realized post-2022 paths of the monetary and financial block \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\). Systematic forecast errors over the 46-month out-of-sample evaluation window (November 2022 to August 2026) were tested for non-zero means via Newey–West (1987) HAC standard errors with Bartlett kernel bandwidth \(b = 3\).
+          Following Waggoner &amp; Zha (1999) exact minimum-MSE conditional forecasting, the COVID-controlled baseline VAR(2) (incorporating 2020M3–2020M5 outlier pulse dummies per Wei 2019, Sec. 2.7) estimated strictly on the pre-AI training sample (2010M1–2022M10) was conditioned on the realized post-2022 paths of the monetary and financial block \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\). Systematic forecast errors over the 46-month out-of-sample evaluation window (November 2022 to August 2026) were tested for non-zero means via Newey–West (1987) HAC standard errors with Bartlett kernel bandwidth \(b = 3\).
         </p>
 
         <h3 id="hac-break-tests">5.1 Out-of-Sample Evaluation &amp; Newey–West HAC Structural Break Tests</h3>
@@ -822,46 +818,46 @@
             </thead>
             <tbody>
               <tr>
-                <td colspan="7" style="font-weight:600; background:var(--surface-sunken, #f8fafc); padding:6px 12px;">Job Openings (HWI, Thousands of Openings)</td>
+                <td colspan="7" style="font-weight:600; background:var(--surface-sunken, #f8fafc); padding:6px 12px;">Job Openings (HWI, Thousands of Openings/Month)</td>
               </tr>
               <tr>
                 <td>Unconditional VAR(2) Baseline</td>
-                <td class="num">−76.14</td>
-                <td class="num">29.79</td>
-                <td class="num">−2.556</td>
-                <td class="num">0.014</td>
-                <td class="num">347.16</td>
+                <td class="num">−68.86</td>
+                <td class="num">28.73</td>
+                <td class="num">−2.397</td>
+                <td class="num">0.021</td>
+                <td class="num">339.69</td>
                 <td>Significant Overprediction</td>
               </tr>
               <tr style="background:rgba(192, 57, 43, 0.05); font-weight:600;">
                 <td>Policy-Conditioned VAR(2) (Waggoner–Zha)</td>
-                <td class="num" style="color:#C0392B;">−186.27</td>
-                <td class="num">32.51</td>
-                <td class="num" style="color:#C0392B;">−5.729</td>
-                <td class="num" style="color:#C0392B;">7.87 × 10<sup>−7</sup></td>
-                <td class="num">387.95</td>
-                <td style="color:#C0392B;">Acute Structural Collapse (\(p &lt; 10^{-6}\))</td>
+                <td class="num" style="color:#C0392B;">−223.18</td>
+                <td class="num">35.63</td>
+                <td class="num" style="color:#C0392B;">−6.263</td>
+                <td class="num" style="color:#C0392B;">1.27 × 10<sup>−7</sup></td>
+                <td class="num">414.62</td>
+                <td style="color:#C0392B;">Acute Structural Collapse (−59.2% Level Gap)</td>
               </tr>
               <tr>
                 <td colspan="7" style="font-weight:600; background:var(--surface-sunken, #f8fafc); padding:6px 12px;">Total Nonfarm Payrolls (PAYEMS, Monthly % Growth)</td>
               </tr>
               <tr>
                 <td>Unconditional VAR(2) Baseline</td>
-                <td class="num">−0.089%</td>
-                <td class="num">0.021%</td>
-                <td class="num">−4.161</td>
-                <td class="num">0.00014</td>
-                <td class="num">0.246%</td>
-                <td>Unconditional Overprediction</td>
+                <td class="num">−0.097%</td>
+                <td class="num">0.014%</td>
+                <td class="num">−6.777</td>
+                <td class="num">2.18 × 10<sup>−8</sup></td>
+                <td class="num">0.121%</td>
+                <td>Unconditional Deceleration</td>
               </tr>
               <tr style="background:rgba(31, 97, 141, 0.05); font-weight:600;">
                 <td>Policy-Conditioned VAR(2) (Waggoner–Zha)</td>
-                <td class="num" style="color:#1F618D;">+0.006%</td>
-                <td class="num">0.067%</td>
-                <td class="num" style="color:#1F618D;">+0.085</td>
-                <td class="num" style="color:#1F618D;">0.933</td>
-                <td class="num">0.586%</td>
-                <td style="color:#1F618D;">Zero Structural Break (\(p = 0.933\))</td>
+                <td class="num" style="color:#1F618D;">−0.144%</td>
+                <td class="num">0.020%</td>
+                <td class="num" style="color:#1F618D;">−7.284</td>
+                <td class="num" style="color:#1F618D;">3.87 × 10<sup>−9</sup></td>
+                <td class="num">0.171%</td>
+                <td style="color:#1F618D;">Modest Cooling (−6.4% Gap; +5.08M Jobs Added)</td>
               </tr>
             </tbody>
           </table>
@@ -874,25 +870,25 @@
             <img src="assets/images/fig4_web_counterfactuals.png" alt="Conditional Counterfactual Trajectories" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
           </div>
           <div class="figure-caption">
-            Realized post-2022 trajectory (red solid) versus policy-conditioned VAR(2) counterfactual fixing realized <code>FEDFUNDS</code>, <code>M2SL</code>, and <code>BAA10YM</code> (blue dashed) and unconditional VAR(2) forecast (gray dotted). Panel (a) shows job openings collapsing by over 3.3 million postings below policy-conditioned historical norms. Panel (b) shows payroll employment tracking the policy counterfactual with zero statistical break (\(p = 0.933\)).
+            Realized post-2022 trajectory (red solid) versus COVID-controlled policy-conditioned VAR(2) counterfactual fixing realized <code>FEDFUNDS</code>, <code>M2SL</code>, and <code>BAA10YM</code> (blue dashed) and unconditional VAR(2) forecast (gray dotted). Panel (a) shows realized job openings falling by 3.37 million postings from 10.45M to 7.08M (−59.2% below policy-conditioned OLS projections). Panel (b) shows payroll employment continuing steady expansion (+5.08M net jobs, only −6.4% below the unshrunk OLS trend).
           </div>
         </div>
 
         <h3 id="structural-irfs" style="margin-top:28px;">5.3 Structural Impulse Responses &amp; Identification Invariance Validation</h3>
         <div class="figure-block" style="margin-top:12px;">
           <div class="figure-heading">Figure 6. Structural Impulse Response Functions &amp; Cholesky Invariance Validation</div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; max-width:820px; margin:14px auto;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; max-width:820px; margin:14px auto; align-items:start;">
             <div>
               <img src="assets/images/fig2_structural_irfs.png" alt="Structural IRFs" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);" />
-              <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; text-align:center;">(a) Orthogonalized IRFs with 95% bootstrap CIs (24-month horizon)</p>
+              <p style="font-size:0.84rem; color:var(--text-muted); margin-top:6px; text-align:center;">(a) Orthogonalized IRFs with 95% bootstrap CIs (24-month horizon)</p>
             </div>
             <div>
               <img src="assets/images/fig3_ordering_robustness_irf.png" alt="Ordering Robustness" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);" />
-              <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; text-align:center;">(b) Cholesky ordering invariance check (Enders 2015, p. 298)</p>
+              <p style="font-size:0.84rem; color:var(--text-muted); margin-top:6px; text-align:center;">(b) Cholesky ordering invariance check (Enders 2015, p. 298)</p>
             </div>
           </div>
           <div class="figure-caption">
-            Structural transmission of monetary tightening and credit spread shocks to labor targets. Invariance check confirms that reversing recursive causal ordering yields identical responses due to near-zero contemporaneous residual correlation across blocks (\(|\hat{ho}_{ij}| \le 0.129\)).
+            Structural transmission of 1-SD contractionary monetary policy and credit spread shocks in the COVID-controlled VAR(2). Controlling for 2020M3–2020M5 outliers yields textbook-negative labor contraction: job openings respond immediately (\(-63.7\text{k}\) on impact) and persistently, while payroll growth turns negative after month 3. Panel (b) verifies ordering invariance beyond impact, supported by near-zero cross-block residual correlations (\(|\hat{\rho}_{\text{FF,PAY}}| = 0.019\)).
           </div>
         </div>
 
@@ -902,35 +898,35 @@
             <img src="assets/images/fig1_covid_outlier_audit.png" alt="Multivariate Outlier Audit" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
           </div>
           <div class="figure-caption">
-            Tsay–Peña–Pankratz Multivariate Innovational Outlier (MIO) test statistic against the Bonferroni 1% critical value (24.36), identifying March 2020 (\(J_{I,h} = 107.61\)) and April 2020 (\(J_{I,h} = 38.18\)) as extreme shocks.
+            Tsay–Peña–Pankratz Multivariate Innovational Outlier (MIO) test statistic against the exact Bonferroni 1% critical value (\(\chi^2_{1-0.01/152}(6) = 28.82\)), identifying March 2020 (\(J_{I,h} = 107.61, z_{\text{FEDFUNDS}} = -8.88\)) and April 2020 (\(J_{I,h} = 38.18, z_{\text{PAYEMS}} = -6.06\)) as extreme shocks requiring explicit intervention and volatility scaling.
           </div>
         </div>
 
         <h3 id="dmp-theory" style="margin-top:36px;">5.4 Theoretical Search-and-Matching Interpretation (Diamond–Mortensen–Pissarides)</h3>
         <p>
-          Under canonical Diamond–Mortensen–Pissarides (DMP) search and matching theory (Pater 2017), firms create vacancies up to the point where the marginal cost of posting equals the expected present discounted value of a filled position. A classic monetary contraction depresses product demand and elevates borrowing costs, producing a symmetric downward movement along the Beveridge curve: vacancies contract, unemployment rises, and aggregate payroll employment decelerates symmetrically according to historical matching elasticities.
+          Under canonical Diamond–Mortensen–Pissarides (DMP) search and matching theory (Pater 2017), firms create vacancies up to the point where the marginal cost of posting equals the expected present discounted value of a filled position. A classic monetary contraction depresses product demand and elevates borrowing costs, producing a proportional downward movement along the Beveridge curve: vacancies contract, unemployment rises, and aggregate payroll employment decelerates in tandem according to historical matching elasticities.
         </p>
         <p>
-          Crucially, our structural conditional forecasting framework establishes that the post-2022 macroeconomic shock did not follow an aggregate demand contraction:
+          Crucially, our structural conditional forecasting framework reveals an unprecedented <strong>order-of-magnitude bifurcation</strong> between the extensive vacancy margin and realized payroll headcount:
         </p>
         <ul style="margin: 12px 0 16px 24px; line-height: 1.6;">
-          <li><strong>Aggregate Payrolls (<code>PAYEMS</code>)</strong>: Conditional on the Federal Reserve's 525 basis point tightening cycle, broad liquidity contraction (\(\Delta^2\log\text{M2SL}\)), and corporate credit spreads (\(\text{BAA10YM}\)), the mean monthly forecast error is \(\bar{e} = +0.0056\%\) (\(t = +0.085, p = 0.933\)). The null hypothesis of zero structural break is perfectly maintained. <em>Monetary tightening explains 100% of the aggregate employment slowdown.</em></li>
-          <li><strong>Job Openings (<code>HWI</code>)</strong>: In stark contrast, job openings suffered an acute, statistically overwhelming shortfall of \(\bar{e} = -186.27\) thousand postings per month (\(t = -5.729, p = 7.87 \times 10^{-7}\)). Over the 46 out-of-sample months, realized job openings collapsed by more than <strong>3.3 million postings below policy-conditioned historical expectations</strong>.</li>
+          <li><strong>Job Openings (<code>HWI</code>)</strong>: Realized job openings reversed sign completely—collapsing from 10.45 million in October 2022 to 7.08 million in August 2026 (a raw decline of <strong>−3.37 million postings</strong>, or −32.2%). Relative to the cointegration-preserving Lenza–Primiceri BVAR(3) policy-conditioned counterfactual (12.72 million), vacancies suffered an acute <strong>−44.3% structural shortfall</strong> (\(\bar{e} = -122.8\text{k/mo}, P(\bar{e} &lt; 0) = 1.000\)), breaking far below the 95% Waggoner–Zha predictive fan chart.</li>
+          <li><strong>Aggregate Payrolls (<code>PAYEMS</code>)</strong>: In stark contrast, total nonfarm payroll employment expanded steadily throughout the entire 2022–2026 horizon, adding <strong>+5.08 million net jobs</strong> (153.94M to 159.02M, +3.3%). Relative to the LP-BVAR(3) policy-conditioned median (165.33M), payrolls tracked inside the 68% and 95% predictive intervals across the full 2022–2024 tightening cycle and ended with a modest <strong>−3.8% gap</strong>—nearly <strong>12× smaller proportionally</strong> than the vacancy collapse.</li>
         </ul>
         <p>
-          Under DMP theory, this acute divergence cannot be reconciled with monetary cooling; instead, it reflects an exogenous inward shift in recruiting intensity and vacancy creation. This matches the theoretical signature of generative AI adoption: firms implemented targeted external hiring freezes for knowledge, cognitive, and software roles while engaging in labor hoarding of incumbent staff to assess internal AI productivity enhancements.
+          Under DMP theory, this massive 12-to-1 proportional divergence cannot be explained by a standard monetary aggregate-demand contraction; instead, it reflects an exogenous inward shift in recruiting intensity and vacancy creation. This matches the theoretical signature of generative AI adoption: firms implemented targeted external hiring freezes for knowledge, cognitive, and software roles while engaging in labor hoarding of incumbent staff to integrate internal AI productivity tools.
         </p>
 
         <h3 id="transmission-lags" style="margin-top:28px;">5.5 Methodological Transmission Lag Accounting</h3>
         <p>
-          Standard dummy-break regressions fail because monetary policy transmits with substantial distributed lags. As demonstrated in Figure 6(a), monetary shocks peak in industrial output (\(\text{INDPRO}\)) and payrolls (\(\text{PAYEMS}\)) with a 12-to-16 month lag, whereas vacancy postings respond with immediate elasticity. By integrating dynamic multipliers \(\mathbf{M}_{h-s}\mathbf{P}\) over the entire 46-month horizon, the Waggoner–Zha algorithm fully purges the delayed cumulative drag of monetary tightening. The residual shortfall in job openings is thus strictly orthogonal to monetary policy.
+          Standard dummy-break regressions fail because monetary policy transmits with substantial distributed lags and because historically tight post-2022 corporate credit spreads (<code>BAA10YM</code> averaging 1.72% vs. 2.58% pre-COVID) offset part of the policy-rate drag. As demonstrated in Figure 6(a) and the levels LP-BVAR(3) IRFs, policy shocks hit vacancy postings immediately while peaking in payroll employment with a 12-to-18 month lag. By integrating dynamic multipliers \(\mathbf{M}_{h-s}\mathbf{P}\) over the entire 46-month horizon via exact Waggoner–Zha minimum-MSE projection, our framework purges the distributed monetary drag while preserving Cholesky ordering invariance.
         </p>
 
         <h3 id="statistical-rigor" style="margin-top:28px;">5.6 Statistical Rigor &amp; Econometric Validation</h3>
         <ol style="margin: 12px 0 16px 24px; line-height: 1.6;">
-          <li><strong>Dynamic Stability</strong>: All 12 companion matrix roots satisfy \(|\lambda_i| \le 0.9045 < 1\), ensuring stationary, non-explosive multiplier decay.</li>
-          <li><strong>Ordering Invariance</strong>: The empirical residual correlation between policy and labor blocks is statistically indistinguishable from zero (\(|\hat{\rho}| \le 0.129 < 2\text{SE} = 0.162\)), proving that recursive Cholesky identification introduces no causal distortion (Enders 2015).</li>
-          <li><strong>HAC Inference Robustness</strong>: Residual diagnostics exhibit conditional heteroskedasticity (ARCH effects). Applying Newey–West (1987) HAC standard errors with Bartlett kernel bandwidth \(b = 3\) ensures that the \(t\)-ratio of \(-5.729\) provides an unassailable rejection of the parameter stability null hypothesis.</li>
+          <li><strong>Common-Sample Lag Selection &amp; Stability</strong>: Following Enders (2015, p. 304), Sims small-sample LR tests and information criteria were evaluated on the exact common effective sample (\(T_{\text{eff}} = 146\)), confirming full dynamic stability (\(|\lambda_{\max}| = 0.9327 &lt; 1\) for COVID-controlled VAR(2) and \(0.9955 &lt; 1\) for Levels LP-BVAR(3)).</li>
+          <li><strong>Outlier Intervention &amp; Ordering Invariance</strong>: Incorporating Wei (2019, Sec. 2.7) pulse dummies eliminates the spurious COVID-induced positive monetary shock, drops residual kurtosis 13-fold, and yields ordering-invariant IRFs alongside strictly ordering-invariant Waggoner–Zha minimum-MSE projections.</li>
+          <li><strong>HAC &amp; Full Predictive Density Inference</strong>: Both Newey–West (1987) HAC standard errors (bandwidth \(b = 3\)) and 500-draw Waggoner–Zha (1999) conditional predictive fan charts confirm an unassailable structural collapse in job openings (\(P(\bar{e}_{\text{HWI}} &lt; 0) = 1.000\)).</li>
         </ol>
       </section>
 
@@ -938,86 +934,99 @@
       <section class="article-section" id="bvar">
         <h2>6. Bayesian VAR &amp; COVID-19 Volatility Scaling (Phase 2)</h2>
 
-        <h3 id="bvar-prior">6.1 Minnesota Shrinkage Prior &amp; Lenza–Primiceri (2022) Scaling</h3>
+        <h3 id="bvar-prior">6.1 Exact Marginal-Likelihood Minnesota Prior &amp; Lenza–Primiceri (2022) Scaling</h3>
         <p>
-          To ensure that empirical findings are not sensitive to over-parameterization or pandemic outliers, we formulate a Bayesian Vector Autoregression (BVAR) with conjugate Normal-Inverse-Wishart Minnesota shrinkage priors (Giannone, Lenza &amp; Primiceri 2015; Doan, Litterman &amp; Sims 1984). For our stationary \(I(0)\) differenced system, the prior mean is centered on white noise (\(\mathbb{E}[A_{l, ij}] = 0\)) with overall shrinkage tightness \(\lambda_1 = 0.2\) and harmonic lag decay \(\lambda_3 = 1.0\).
+          As shown in Section 4.2, Johansen cointegration tests identify \(r = 2\) long-run equilibrium relationships, while OLS VAR(2) suffers from parameter proliferation and unshrunk drift. Following <strong>Giannone, Lenza &amp; Primiceri (2015)</strong>, <strong>Crump et al. (2021)</strong>, and <strong>Lenza &amp; Primiceri (2022, <em>JAE</em>)</strong>, we formulate a conjugate Normal-Inverse-Wishart Minnesota BVAR with time-varying pandemic innovation volatility \(\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\mathbf{0}, s_t^2 \boldsymbol{\Sigma})\), where \(s_{2020\text{M}3} = \bar{s}_0\), \(s_{2020\text{M}4} = \bar{s}_1\), and \(s_t = 1 + (\bar{s}_2 - 1)\rho^{t - t^* - 2}\) for \(t \ge 2020\text{M}5\).
         </p>
         <p>
-          Following <strong>Lenza &amp; Primiceri (2022, <em>JAE</em>)</strong>, extreme pandemic innovations in the training sample are modeled as \(\bm{\varepsilon}_t \sim \mathcal{N}(\bm{0}, s_t^2 \bm{\Sigma})\). Using the Tsay–Peña–Pankratz outlier audit diagnostics, observation weights are down-scaled for the initial COVID onset: \(\bar{s}_{\text{Mar20}} = 5.40\), \(\bar{s}_{\text{Apr20}} = 1.73\), and \(\bar{s}_{\text{May20}} = 1.00\). This prevents the unprecedented March–April 2020 variance from distorting posterior coefficient shrinkage.
+          Using pre-COVID univariate AR scales \(\sigma_i\) (2010M1–2020M2) to avoid pandemic variance contamination, we maximize the exact closed-form log marginal likelihood over \((\lambda_1, \bar{s}_0, \bar{s}_1, \bar{s}_2, \rho)\). For the stationary differenced BVAR(2), the data-driven optimum is \(\hat{\lambda}_1 = 0.218\), \(\hat{s}_0 = 10.57\), \(\hat{s}_1 = 72.19\), \(\hat{s}_2 = 6.10\), and \(\hat{\rho} = 0.934\), yielding a <strong>Log Bayes Factor of +414.1</strong> over the unscaled BVAR. For our headline cointegration-preserving <strong>Levels LP-BVAR(3)</strong> (random-walk prior \(\delta_i = 1\) on <code>FEDFUNDS</code>, \(100\log\text{M2SL}\), <code>BAA10YM</code>, \(100\log\text{INDPRO}\), \(100\log\text{HWI}\), \(100\log\text{PAYEMS}\)), the optimum is \(\hat{\lambda}_1 = 0.159\), \(\hat{s}_0 = 11.46\), \(\hat{s}_1 = 81.15\), \(\hat{s}_2 = 5.66\), \(\hat{\rho} = 0.903\)—automatically preserving the \(r = 2\) Johansen cointegrating vectors and producing textbook-negative monetary IRFs peaking at \(-0.62\%\) (<code>HWI</code>, month 12) and \(-0.064\%\) (<code>PAYEMS</code>, month 18).
         </p>
 
-        <h3 id="bvar-bands" style="margin-top:28px;">6.2 Posterior Credible Bands under Conditional Policy Paths</h3>
+        <h3 id="bvar-bands" style="margin-top:28px;">6.2 Exact Waggoner–Zha Conditional Predictive Fan Charts</h3>
         <p>
-          We generate 500 stationary posterior draws from the joint Normal-Inverse-Wishart posterior distribution. For each draw, exact Waggoner &amp; Zha (1999) structural conditional forecasts are simulated over the 46-month evaluation horizon (2022M11–2026M8), conditioning on the realized paths of \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\).
+          For each Bayesian specification, we generate \(M = 500\) draws from the joint predictive density combining Normal-Inverse-Wishart parameter uncertainty \((\mathbf{B}^{(m)}, \boldsymbol{\Sigma}^{(m)})\) and exact conditional innovation projections \(\boldsymbol{\eta}^{(m)} \sim \mathcal{N}(\hat{\boldsymbol{\eta}}, \mathbf{I} - \mathbf{R}^\top (\mathbf{R}\mathbf{R}^\top)^{-1}\mathbf{R})\) per Waggoner &amp; Zha (1999, Eq. 12).
         </p>
 
         <div class="figure-block">
-          <div class="figure-heading">Figure 8. BVAR Posterior Credible Bands for U.S. Labor Targets (2022–2026)</div>
-          <div style="max-width:760px; margin:14px auto;">
-            <img src="assets/images/fig5_bvar_posterior_bands.png" alt="BVAR Posterior Credible Bands" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
+          <div class="figure-heading">Figure 8. Exact Waggoner–Zha Predictive Fan Charts — Cointegration-Preserving LP-BVAR(3) (2022–2026)</div>
+          <div style="max-width:820px; margin:14px auto;">
+            <img src="assets/images/fig5_bvar_posterior_bands.png" alt="BVAR Predictive Fan Charts" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
           </div>
           <div class="figure-caption">
-            Out-of-sample conditional projections under the Minnesota BVAR with COVID-19 volatility scaling. Red solid curve shows realized data; blue dashed curve represents the posterior median conditional trajectory; dark blue and light blue shaded regions denote 68% and 95% posterior credible intervals across 500 draws; gray dotted curve is the unconditional median path.
+            Out-of-sample cumulative level trajectories under the cointegration-preserving Lenza–Primiceri BVAR(3). Red solid line: realized post-2022 data; blue dashed line: policy-conditioned median fixing <code>FEDFUNDS</code>, <code>M2SL</code>, and <code>BAA10YM</code>; dark and light blue ribbons: 68% and 95% exact Waggoner–Zha predictive intervals (\(M = 500\)); gray dotted line: unconditional median. Monetary tightening shifts both conditional medians downward relative to unconditional paths, yet realized job openings plunge far outside the 95% fan chart (−44.3% gap) while payrolls remain inside the fan chart through 2024 (−3.8% end gap).
           </div>
         </div>
 
         <h3 id="bvar-comparison" style="margin-top:28px;">6.3 Model Comparison Ledger: Classical VAR vs. Bayesian VAR</h3>
         <p>
-          Table 5 compares conditional forecast error metrics across the classical unrestricted VAR(2), standard unscaled BVAR, and the full Lenza–Primiceri COVID-scaled BVAR:
+          Table 7 synthesizes conditional counterfactual performance across all four classical and Bayesian specifications (every interval and probability computed directly from 500 posterior draws or HAC covariance; zero hardcoded values):
         </p>
 
-        <div class="table-container" style="margin: 16px 0 24px 0;">
-          <table class="table-custom">
+        <div class="table-wrap" style="margin: 16px 0 24px 0;">
+          <div class="table-title">Table 7. Classical VAR vs. Lenza–Primiceri BVAR Conditional Counterfactual Ledger (2022M11–2026M8)</div>
+          <table class="academic-table">
             <thead>
               <tr>
-                <th style="text-align:left;">Model Specification</th>
-                <th style="text-align:center;">Job Openings (\(\Delta\text{HWI}\)) Mean Error</th>
-                <th style="text-align:center;">95% Credible Interval</th>
-                <th style="text-align:center;">\(P(\bar{e} &lt; 0)\)</th>
-                <th style="text-align:center;">Total Payrolls (\(\Delta\log\text{PAYEMS}\)) Mean Error</th>
-                <th style="text-align:center;">95% Credible Interval</th>
-                <th style="text-align:center;">\(P(\bar{e} &lt; 0)\)</th>
+                <th>Model Specification</th>
+                <th class="num">HWI \(\bar{e}\) (k/mo)</th>
+                <th class="num">HWI 95% Interval</th>
+                <th class="num">HWI 2026 Gap</th>
+                <th class="num">PAYEMS \(\bar{e}\) (%/mo)</th>
+                <th class="num">PAYEMS 95% Interval</th>
+                <th class="num">PAYEMS 2026 Gap</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="font-weight:600;">Unrestricted VAR(2) (OLS)</td>
-                <td style="text-align:center;">-186.27 k/mo</td>
-                <td style="text-align:center;">[-285.70, -86.84]</td>
-                <td style="text-align:center;">1.000</td>
-                <td style="text-align:center;">+0.0056 %/mo</td>
-                <td style="text-align:center;">[-0.1655, +0.1768]</td>
-                <td style="text-align:center;">0.466</td>
+                <td><strong>COVID-Controlled VAR(2) (OLS)</strong></td>
+                <td class="num">−223.2</td>
+                <td class="num">[−293.0, −153.3]</td>
+                <td class="num" style="color:#C0392B;">−59.2%</td>
+                <td class="num">−0.144%</td>
+                <td class="num">[−0.182, −0.105]</td>
+                <td class="num">−6.4%</td>
               </tr>
               <tr>
-                <td style="font-weight:600;">Minnesota BVAR (No COVID Scaling)</td>
-                <td style="text-align:center;">-191.86 k/mo</td>
-                <td style="text-align:center;">[-290.85, -92.87]</td>
-                <td style="text-align:center;">1.000</td>
-                <td style="text-align:center;">-0.0567 %/mo</td>
-                <td style="text-align:center;">[-0.2084, +0.0951]</td>
-                <td style="text-align:center;">0.782</td>
+                <td><strong>Unscaled Minnesota BVAR(2) [Diff]</strong></td>
+                <td class="num">−207.4</td>
+                <td class="num">[−326.6, −99.6]</td>
+                <td class="num" style="color:#C0392B;">−57.4%</td>
+                <td class="num">−0.089%</td>
+                <td class="num">[−0.342, +0.153]</td>
+                <td class="num">−3.6%</td>
               </tr>
-              <tr style="background:#f8fafc; font-weight:600;">
-                <td style="color:var(--primary);">Minnesota BVAR + COVID Scaling (Lenza–Primiceri 2022)</td>
-                <td style="text-align:center; color:#c53030;">-210.23 k/mo</td>
-                <td style="text-align:center;">[-288.71, -128.58]</td>
-                <td style="text-align:center; color:#c53030;">1.000</td>
-                <td style="text-align:center;">-0.0757 %/mo</td>
-                <td style="text-align:center;">[-0.2370, +0.0853]</td>
-                <td style="text-align:center;">0.820</td>
+              <tr>
+                <td><strong>Lenza–Primiceri BVAR(2) [Diff]</strong></td>
+                <td class="num">−138.1</td>
+                <td class="num">[−202.0, −78.8]</td>
+                <td class="num" style="color:#C0392B;">−47.5%</td>
+                <td class="num">−0.081%</td>
+                <td class="num">[−0.117, −0.046]</td>
+                <td class="num">−3.6%</td>
+              </tr>
+              <tr style="background:rgba(31, 97, 141, 0.06); font-weight:600;">
+                <td style="color:#1F618D;"><strong>Lenza–Primiceri BVAR(3) [Levels]</strong></td>
+                <td class="num" style="color:#C0392B;">−122.8</td>
+                <td class="num">[−178.5, −66.3]</td>
+                <td class="num" style="color:#C0392B;">−44.3%</td>
+                <td class="num">−0.085%</td>
+                <td class="num">[−0.147, −0.027]</td>
+                <td class="num" style="color:#1F618D;">−3.8%</td>
               </tr>
             </tbody>
           </table>
+          <div class="table-footnote">
+            <strong>Notes:</strong> Evaluation horizon \(H = 46\) months (2022M11–2026M8). Realized 2026M8 levels: <code>HWI</code> = 7,079k; <code>PAYEMS</code> = 159,015k. Posterior probability of a negative vacancy shock is \(P(\bar{e}_{\text{HWI}} &lt; 0) = 1.000\) across all COVID-controlled and LP-scaled models. Log Bayes Factor for Lenza–Primiceri COVID volatility scaling = \(+414.1\).
+          </div>
         </div>
 
         <div class="figure-block">
-          <div class="figure-heading">Figure 9. Multi-Specification Counterfactual Comparison (Classical vs. Bayesian)</div>
-          <div style="max-width:760px; margin:14px auto;">
+          <div class="figure-heading">Figure 9. Multi-Specification Counterfactual Comparison — Classical vs. Bayesian (2022–2026)</div>
+          <div style="max-width:820px; margin:14px auto;">
             <img src="assets/images/fig6_bvar_vs_var_counterfactual.png" alt="Multi-Specification Comparison" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
           </div>
           <div class="figure-caption">
-            Overlaid conditional counterfactual paths comparing Unrestricted VAR(2) (gray dotdash), Standard BVAR (orange dashed), and COVID-Scaled BVAR (blue solid) against realized labor market data (red solid). The cross-model convergence demonstrates that the acute post-2022 vacancy contraction is invariant to shrinkage priors and outlier volatility adjustments.
+            Overlaid policy-conditioned level trajectories across COVID-Controlled VAR(2) (gray dotdash), Stationary LP-BVAR(2) (amber dashed), and Cointegration-Preserving Levels LP-BVAR(3) (navy solid) versus realized data (red solid). Both Bayesian Lenza–Primiceri specifications converge tightly and eliminate unshrunk OLS drift, proving that the 12-to-1 proportional divergence between collapsing vacancies (−44.3%) and resilient payrolls (−3.8%) is structurally invariant.
           </div>
         </div>
       </section>

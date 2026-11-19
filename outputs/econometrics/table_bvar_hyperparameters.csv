@@ -1,0 +1,4 @@
+"Specification","lambda1","s_2020M3","s_2020M4","s_2020M5","rho","LogML","MaxRoot"
+"Unscaled BVAR(2) [Diff]",0.2047,1,1,1,0,-2516.5,0.9233
+"Lenza-Primiceri BVAR(2) [Diff]",0.218,10.57,72.19,6.1,0.9338,-2102.35,0.9465
+"Lenza-Primiceri BVAR(3) [Levels]",0.1587,11.46,81.15,5.66,0.9029,-1461.75,0.9955
