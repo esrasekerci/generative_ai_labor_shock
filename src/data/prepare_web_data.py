@@ -305,14 +305,12 @@ def main() -> None:
     }
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    json_path = OUT_DIR / "fred_macro.json"
     js_path = OUT_DIR / "fred_macro.js"
 
     json_str = json.dumps(payload, indent=2)
-    json_path.write_text(json_str + "\n", encoding="utf-8")
     js_path.write_text(f"window.FRED_MACRO_DATA = {json_str};\n", encoding="utf-8")
 
-    print(f"Wrote {json_path.relative_to(REPO_ROOT)} and {js_path.relative_to(REPO_ROOT)}")
+    print(f"Wrote {js_path.relative_to(REPO_ROOT)}")
     print(f"Sample: {dates[0]} to {dates[-1]} (T={n_total}; train={n_train}, eval={n_test})")
     for sid in ids:
         st = stats[sid]

@@ -1,7 +1,7 @@
 /* ==========================================================================
-   STAT 563 Editorial Research Site — Interactive Data & Visualization Engine
+   Interactive Figures & Table Renderer
    Reads pre-compiled FRED-MD payload from `window.FRED_MACRO_DATA`
-   (generated via `src/data/prepare_web_data.py` from `fred_data.csv`).
+   (generated via `src/data/prepare_web_data.py`).
    ========================================================================== */
 
 (function () {
@@ -9,7 +9,7 @@
 
   const DATA = window.FRED_MACRO_DATA;
   if (!DATA) {
-    console.error("FRED_MACRO_DATA not found. Run `python3 src/data/prepare_web_data.py`.");
+    console.error("FRED_MACRO_DATA missing. Run `python3 src/data/prepare_web_data.py`.");
     return;
   }
 
@@ -22,14 +22,13 @@
   };
 
   const state = {
-    fig1Scale: "zscore",   // "zscore" | "indexed"
-    fig1Range: "full",     // "full" | "covid" | "postai"
-    fig1Subset: "all",     // "all" | "labor" | "cond"
-    fig2Series: "HWI",     // default to HWI (flagship series in hypothesis)
+    fig1Scale: "zscore",
+    fig1Range: "full",
+    fig1Subset: "all",
+    fig2Series: "HWI",
     fig3Mode: "preAITransformed",
   };
 
-  /* ------------------------- Formatting Helpers ------------------------- */
   function fmtNumber(val, id) {
     if (val === null || val === undefined || Number.isNaN(val)) return "—";
     if (id === "PAYEMS" || id === "M2SL" || id === "HWI") {
@@ -68,7 +67,7 @@
         x1: evalWin.end,
         y0: 0,
         y1: 1,
-        fillcolor: "rgba(245, 158, 11, 0.12)",
+        fillcolor: "rgba(245, 158, 11, 0.11)",
         line: { width: 0 },
         layer: "below",
       },
@@ -80,39 +79,20 @@
         x1: evalWin.start,
         y0: 0,
         y1: 1,
-        line: { color: "#B5121B", width: 1.5, dash: "dot" },
+        line: { color: "#B5121B", width: 1.4, dash: "dot" },
       },
     ];
   }
 
-  /* --------------------- Populate Summary Table & KPIs ------------------- */
-  function populateTableAndKPIs() {
-    const meta = DATA.metadata;
-    document.getElementById("kpi-k").textContent = `k = ${meta.k}`;
-    document.getElementById("kpi-total").textContent = `T = ${meta.nTotal}`;
-    document.getElementById("kpi-span").textContent =
-      `${fmtDateShort(meta.sampleStart)} – ${fmtDateShort(meta.sampleEnd)} (${meta.proposalTarget.nTotal} target)`;
-    document.getElementById("kpi-train").innerHTML = `T<sub>train</sub> = ${meta.trainWindow.n}`;
-    document.getElementById("kpi-test").innerHTML = `T<sub>test</sub> = ${meta.evalWindow.n}`;
-    document.getElementById("kpi-test-sub").textContent =
-      `${fmtDateShort(meta.evalWindow.start)} – ${fmtDateShort(meta.evalWindow.end)} (${meta.proposalTarget.nTest} target)`;
-
+  /* --------------------------- Table 1 ----------------------------------- */
+  function populateTable1() {
     const tbody = document.getElementById("series-table-body");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     DATA.series.forEach((s) => {
       const st = DATA.stats[s.id];
       const rs = DATA.regimeStats[s.id];
-      let roleClass = "real";
-      let roleShort = "Real Activity";
-      if (s.block === "Labor Market Target") {
-        roleClass = "target";
-        roleShort = "Labor Target";
-      } else if (s.block === "Policy & Financial Conditioning") {
-        roleClass = "cond";
-        roleShort = "Conditioning";
-      }
-
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
@@ -120,13 +100,11 @@
           <code>${s.id}</code>
         </td>
         <td>
-          <strong>${s.label}</strong><br/>
+          ${s.label}<br/>
           <span style="color:var(--ink-muted); font-size:0.8rem;">${s.units}</span>
         </td>
-        <td><span class="role-badge ${roleClass}">${roleShort}</span></td>
-        <td>
-          <code>tcode ${s.tcode}</code> · ${s.transformFormula}
-        </td>
+        <td>${s.block}</td>
+        <td><code>${s.tcode}</code> · ${s.transformFormula}</td>
         <td class="num">${fmtNumber(st.mean, s.id)}</td>
         <td class="num">${fmtNumber(st.sd, s.id)}</td>
         <td class="num">${fmtNumber(rs.preMean, s.id)}</td>
@@ -136,8 +114,8 @@
     });
   }
 
-  /* --------------------- Figure 1: Multivariate Co-Movement -------------- */
-  function renderFigure1() {
+  /* ------------------ Figure 2: Multivariate Co-Movement ----------------- */
+  function renderComovement() {
     const dates = DATA.dates;
     const baseIdx = dates.indexOf("2022-10-01");
 
@@ -167,7 +145,7 @@
         y: yValues,
         line: {
           color: s.color,
-          width: s.id === "HWI" || s.id === "PAYEMS" ? 2.4 : 1.75,
+          width: s.id === "HWI" || s.id === "PAYEMS" ? 2.3 : 1.65,
         },
         hovertemplate:
           state.fig1Scale === "zscore"
@@ -176,7 +154,6 @@
       };
     });
 
-    // Determine x-axis range
     let xRange = [dates[0], dates[dates.length - 1]];
     if (state.fig1Range === "covid") {
       xRange = ["2019-01-01", "2022-12-01"];
@@ -203,7 +180,7 @@
         y: 0.99,
         xref: "x",
         yref: "paper",
-        text: "COVID-19 Outlier",
+        text: "COVID-19",
         showarrow: false,
         font: { family: FONT_MONO, size: 10.5, color: "#475569" },
         yanchor: "top",
@@ -213,7 +190,7 @@
         y: 0.99,
         xref: "x",
         yref: "paper",
-        text: "Post-AI & Tightening Window",
+        text: "Post-AI & Tightening",
         showarrow: false,
         font: { family: FONT_MONO, size: 10.5, color: "#92400E" },
         yanchor: "top",
@@ -224,7 +201,7 @@
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "#FFFFFF",
       font: { family: FONT_SANS, color: "#17202A", size: 12.5 },
-      margin: { l: 58, r: 20, t: 22, b: 44 },
+      margin: { l: 58, r: 18, t: 20, b: 42 },
       hovermode: "x unified",
       xaxis: {
         range: xRange,
@@ -238,8 +215,8 @@
           text:
             state.fig1Scale === "zscore"
               ? "Standard Deviations from Mean (Z-Score)"
-              : "Index Level (October 2022 = 100)",
-          font: { size: 12.5, color: "#434E5E" },
+              : "Index (October 2022 = 100)",
+          font: { size: 12, color: "#434E5E" },
         },
         showgrid: true,
         gridcolor: "#EEF2F6",
@@ -266,35 +243,33 @@
     Plotly.react("plot-comovement", traces, layout, PLOTLY_CONFIG);
   }
 
-  /* --------------------- Figure 2: Single-Series Detail ------------------ */
-  function buildFigure2Pills() {
+  /* ------------------ Figure 3: Series Level & Transform ----------------- */
+  function buildSeriesPills() {
     const container = document.getElementById("fig2-series-pills");
+    if (!container) return;
     container.innerHTML = "";
 
     DATA.series.forEach((s) => {
       const btn = document.createElement("button");
       btn.className = `series-pill${s.id === state.fig2Series ? " active" : ""}`;
-      btn.dataset.series = s.id;
       btn.innerHTML = `<span class="series-dot" style="background:${s.color}; margin-right:0;"></span>${s.id}`;
       btn.addEventListener("click", () => {
         state.fig2Series = s.id;
         container.querySelectorAll(".series-pill").forEach((el) => el.classList.remove("active"));
         btn.classList.add("active");
-        renderFigure2();
+        renderSeriesDetail();
       });
       container.appendChild(btn);
     });
   }
 
-  function renderFigure2() {
+  function renderSeriesDetail() {
     const sid = state.fig2Series;
     const meta = DATA.series.find((s) => s.id === sid);
     const st = DATA.stats[sid];
-    const rs = DATA.regimeStats[sid];
     const dates = DATA.dates;
 
-    const oct22Idx = dates.indexOf("2022-10-01");
-    const oct22Val = DATA.levels[sid][oct22Idx];
+    const oct22Val = DATA.levels[sid][dates.indexOf("2022-10-01")];
     const latestVal = st.endVal;
     let deltaText = "—";
     if (oct22Val !== null && latestVal !== null) {
@@ -307,26 +282,6 @@
       }
     }
 
-    const kpiContainer = document.getElementById("fig2-kpis");
-    kpiContainer.innerHTML = `
-      <div class="mini-kpi">
-        <div class="mini-kpi-label">FRED-MD Transform</div>
-        <div class="mini-kpi-val">tcode ${meta.tcode} (${meta.transformFormula})</div>
-      </div>
-      <div class="mini-kpi">
-        <div class="mini-kpi-label">Pre-AI Mean (2010–22)</div>
-        <div class="mini-kpi-val">${fmtNumber(rs.preMean, sid)}</div>
-      </div>
-      <div class="mini-kpi">
-        <div class="mini-kpi-label">Post-AI Mean (2022–26)</div>
-        <div class="mini-kpi-val">${fmtNumber(rs.postMean, sid)}</div>
-      </div>
-      <div class="mini-kpi">
-        <div class="mini-kpi-label">Oct 2022 → ${fmtDateShort(st.lastDate)}</div>
-        <div class="mini-kpi-val">${deltaText}</div>
-      </div>
-    `;
-
     const traceLevel = {
       type: "scatter",
       mode: "lines",
@@ -335,7 +290,7 @@
       y: DATA.levels[sid],
       xaxis: "x",
       yaxis: "y",
-      line: { color: meta.color, width: 2.3 },
+      line: { color: meta.color, width: 2.2 },
       fill: "tozeroy",
       fillcolor: "rgba(16, 42, 67, 0.04)",
       hovertemplate: `<b>Level</b>: %{y:.2f}<extra></extra>`,
@@ -344,7 +299,7 @@
     const traceTrans = {
       type: meta.tcode === 1 ? "scatter" : "bar",
       mode: meta.tcode === 1 ? "lines" : undefined,
-      name: `Stationary (${meta.transformFormula})`,
+      name: meta.transformFormula,
       x: dates,
       y: DATA.transformed[sid],
       xaxis: "x",
@@ -365,7 +320,7 @@
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "#FFFFFF",
       font: { family: FONT_SANS, color: "#17202A", size: 12 },
-      margin: { l: 68, r: 20, t: 18, b: 40 },
+      margin: { l: 68, r: 18, t: 16, b: 38 },
       hovermode: "x unified",
       showlegend: false,
       xaxis: {
@@ -377,7 +332,7 @@
       yaxis: {
         domain: [0.54, 1.0],
         anchor: "x",
-        title: { text: `Raw Level (${meta.units})`, font: { size: 11.5, color: "#434E5E" } },
+        title: { text: `Level (${meta.units})`, font: { size: 11.5, color: "#434E5E" } },
         showgrid: true,
         gridcolor: "#EEF2F6",
         tickfont: { family: FONT_MONO, size: 10.5 },
@@ -396,21 +351,27 @@
     };
 
     Plotly.react("plot-series-detail", [traceLevel, traceTrans], layout, PLOTLY_CONFIG);
+
+    const captionEl = document.getElementById("fig2-caption");
+    if (captionEl) {
+      captionEl.innerHTML =
+        `<strong>${meta.id} (${meta.label}):</strong> FRED-MD <code>tcode ${meta.tcode}</code> (${meta.transformFormula}). Change from Oct 2022 to ${fmtDateShort(st.lastDate)}: <strong>${deltaText}</strong>.`;
+    }
   }
 
-  /* --------------------- Figure 3: Correlation Heatmap ------------------- */
-  const CORR_INSIGHTS = {
+  /* ------------------ Figure 4: Correlation Heatmap ---------------------- */
+  const CORR_CAPTIONS = {
     preAITransformed:
-      "<strong>Pre-AI Training Regime (Jan 2010 – Oct 2022, Stationary Transforms):</strong> Output growth (<code>INDPRO</code>) and payroll growth (<code>PAYEMS</code>) co-move strongly (<strong>r = +0.870</strong>), while job openings (<code>HWI</code>) correlate positively with both payrolls (<strong>r = +0.412</strong>) and output (<strong>r = +0.413</strong>)—confirming tightly coupled multivariate dynamics.",
+      "<strong>Pre-AI Stationary Transforms (Jan 2010 – Oct 2022):</strong> Output growth (<code>INDPRO</code>) and payroll growth (<code>PAYEMS</code>) co-move strongly (r = +0.87), while job openings (<code>HWI</code>) correlate positively with both payrolls (r = +0.41) and output (r = +0.41).",
     postAITransformed:
-      "<strong>Post-AI &amp; Tightening Regime (Nov 2022 – Sep 2026, Stationary Transforms):</strong> Strikingly, monthly changes in job openings (<code>HWI</code>) decouple from both payroll growth (<strong>r = −0.103</strong>) and industrial production (<strong>r = −0.048</strong>), while showing near-zero contemporaneous correlation with <code>FEDFUNDS</code> (<strong>r = +0.008</strong>) and <code>BAA10YM</code> (<strong>r = −0.034</strong>).",
+      "<strong>Post-AI Stationary Transforms (Nov 2022 – Sep 2026):</strong> Monthly changes in job openings (<code>HWI</code>) decouple from payroll growth (r = −0.10), output growth (r = −0.05), and contemporaneous policy/credit indicators (<code>FEDFUNDS</code> r = +0.01, <code>BAA10YM</code> r = −0.03).",
     transformed:
-      "<strong>Full Sample Stationary Transforms (2010–2026):</strong> Across the full 16-year horizon, real activity and payrolls remain tightly linked (<strong>r = +0.851</strong>), with negative liquidity-output co-movement (<strong>r = −0.553</strong>) heavily influenced by the counter-cyclical 2020 COVID-19 monetary surge.",
+      "<strong>Full-Sample Stationary Transforms (2010–2026):</strong> Real activity and payroll growth maintain strong joint co-movement (r = +0.85), while the negative <code>M2SL</code>–<code>INDPRO</code> correlation (r = −0.55) reflects counter-cyclical 2020 liquidity expansion.",
     levels:
-      "<strong>Raw Levels (2010–2026):</strong> Strong level correlations (e.g., <code>PAYEMS</code>–<code>M2SL</code> <strong>r = +0.870</strong>, <code>PAYEMS</code>–<code>BAA10YM</code> <strong>r = −0.809</strong>) reflect shared secular trends and long-run macro-financial linkages, underscoring the necessity of stationarity transforms (or shrinkage/cointegration modeling) in VAR/BVAR estimation.",
+      "<strong>Raw Levels (2010–2026):</strong> High level correlations (e.g., <code>PAYEMS</code>–<code>M2SL</code> r = +0.87; <code>PAYEMS</code>–<code>BAA10YM</code> r = −0.81) reflect shared secular trends and motivate stationarity transformations prior to linear VAR estimation.",
   };
 
-  function renderFigure3() {
+  function renderCorrelation() {
     const labels = DATA.correlations.labels;
     const z = DATA.correlations[state.fig3Mode];
     const annotations = [];
@@ -418,7 +379,6 @@
     for (let i = 0; i < labels.length; i++) {
       for (let j = 0; j < labels.length; j++) {
         const val = z[i][j];
-        const absVal = Math.abs(val);
         const rawText = val >= 0 ? `+${val.toFixed(2)}` : `${val.toFixed(2)}`;
         annotations.push({
           x: labels[j],
@@ -428,7 +388,7 @@
           font: {
             family: FONT_MONO,
             size: 12,
-            color: absVal > 0.55 ? "#FFFFFF" : "#17202A",
+            color: Math.abs(val) > 0.55 ? "#FFFFFF" : "#17202A",
           },
         });
       }
@@ -449,7 +409,7 @@
         [1.0, "#102A43"],
       ],
       colorbar: {
-        title: { text: "Pearson r", font: { family: FONT_MONO, size: 11 } },
+        title: { text: "r", font: { family: FONT_MONO, size: 11 } },
         tickfont: { family: FONT_MONO, size: 10.5 },
         thickness: 14,
       },
@@ -460,23 +420,18 @@
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "#FFFFFF",
       font: { family: FONT_SANS, color: "#17202A" },
-      margin: { l: 88, r: 30, t: 18, b: 56 },
-      xaxis: {
-        side: "bottom",
-        tickfont: { family: FONT_MONO, size: 11.5 },
-      },
-      yaxis: {
-        autorange: "reversed",
-        tickfont: { family: FONT_MONO, size: 11.5 },
-      },
+      margin: { l: 84, r: 24, t: 16, b: 52 },
+      xaxis: { side: "bottom", tickfont: { family: FONT_MONO, size: 11.5 } },
+      yaxis: { autorange: "reversed", tickfont: { family: FONT_MONO, size: 11.5 } },
       annotations,
     };
 
     Plotly.react("plot-correlation", [trace], layout, PLOTLY_CONFIG);
-    document.getElementById("fig3-insight").innerHTML = CORR_INSIGHTS[state.fig3Mode];
+    const cap = document.getElementById("fig3-caption");
+    if (cap) cap.innerHTML = CORR_CAPTIONS[state.fig3Mode];
   }
 
-  /* ----------------------- UI Control Event Bindings --------------------- */
+  /* ----------------------- Controls & Utilities -------------------------- */
   function bindControlGroup(groupId, onSelect) {
     const group = document.getElementById(groupId);
     if (!group) return;
@@ -489,27 +444,6 @@
     });
   }
 
-  function bindReferenceFilters() {
-    const filterGroup = document.getElementById("ref-filters");
-    const items = document.querySelectorAll("#ref-list .ref-item");
-    if (!filterGroup) return;
-
-    filterGroup.querySelectorAll(".series-pill").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        filterGroup.querySelectorAll(".series-pill").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        const tag = btn.dataset.tag;
-        items.forEach((li) => {
-          if (tag === "all" || li.dataset.tag === tag) {
-            li.classList.remove("hidden");
-          } else {
-            li.classList.add("hidden");
-          }
-        });
-      });
-    });
-  }
-
   function bindBibtexCopy() {
     const btn = document.getElementById("copy-bibtex-btn");
     const pre = document.getElementById("bibtex-content");
@@ -518,20 +452,16 @@
     btn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(pre.textContent.trim());
-        btn.textContent = "Copied!";
+        btn.textContent = "Copied";
         setTimeout(() => {
-          btn.textContent = "Copy BibTeX";
-        }, 1800);
+          btn.textContent = "Copy";
+        }, 1600);
       } catch (_err) {
         const range = document.createRange();
         range.selectNodeContents(pre);
         const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-        btn.textContent = "Selected";
-        setTimeout(() => {
-          btn.textContent = "Copy BibTeX";
-        }, 1800);
       }
     });
   }
@@ -570,36 +500,33 @@
     }
   }
 
-  /* ------------------------------ Boot ---------------------------------- */
   function init() {
-    populateTableAndKPIs();
+    populateTable1();
 
     bindControlGroup("fig1-scale-controls", (btn) => {
       state.fig1Scale = btn.dataset.scale;
-      renderFigure1();
+      renderComovement();
     });
     bindControlGroup("fig1-range-controls", (btn) => {
       state.fig1Range = btn.dataset.range;
-      renderFigure1();
+      renderComovement();
     });
     bindControlGroup("fig1-subset-controls", (btn) => {
       state.fig1Subset = btn.dataset.subset;
-      renderFigure1();
+      renderComovement();
     });
     bindControlGroup("fig3-corr-controls", (btn) => {
       state.fig3Mode = btn.dataset.mode;
-      renderFigure3();
+      renderCorrelation();
     });
 
-    renderFigure1();
-    buildFigure2Pills();
-    renderFigure2();
-    renderFigure3();
-    bindReferenceFilters();
+    renderComovement();
+    buildSeriesPills();
+    renderSeriesDetail();
+    renderCorrelation();
     bindBibtexCopy();
     initScrollSpy();
 
-    // Render KaTeX equations once deferred scripts finish loading
     if (document.readyState === "complete") {
       renderMath();
     } else {
