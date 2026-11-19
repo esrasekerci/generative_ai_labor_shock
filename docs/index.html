@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Isolating the Generative AI Labor Shock from Monetary Tightening</title>
+  <title>Monetary Tightening or Generative AI? Isolating Post-2022 U.S. Labor Shocks via Conditional Forecasting</title>
   <meta name="description" content="METU STAT 563 Track A empirical study by Eda Kal Arıca & Esra Şekerci comparing Bayesian VARs, deep learning (TFT/LSTM), and zero-shot foundation models on FRED-MD macro-financial series." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -23,7 +23,7 @@
 
   <header class="site-nav">
     <div class="site-nav-inner">
-      <a class="nav-brand" href="#top">Isolating the Generative AI Labor Shock</a>
+      <a class="nav-brand" href="#top">Monetary Tightening or Generative AI?</a>
       <ul class="nav-links">
         <li><a href="#motivation">Motivation</a></li>
         <li><a href="#data">Data</a></li>
@@ -39,7 +39,7 @@
   <section class="masthead" id="top">
     <div class="masthead-inner">
       <p class="affiliation-line">Middle East Technical University · Department of Statistics · STAT 563 (Track A)</p>
-      <h1 class="paper-title">Isolating the Generative AI Labor Shock from Monetary Tightening</h1>
+      <h1 class="paper-title">Monetary Tightening or Generative AI? Isolating Post-2022 U.S. Labor Shocks via Conditional Forecasting</h1>
       <p class="paper-subtitle">
         A multivariate conditional forecasting comparison of Classical Bayesian VARs, Deep Learning (TFT/LSTM), and Zero-Shot Foundation Models on U.S. macro-financial series.
       </p>
@@ -311,59 +311,106 @@
         </div>
       </section>
 
-      <!-- 5. HYPOTHESES & EVALUATION -->
+      <!-- 5. EMPIRICAL FINDINGS & STRUCTURAL BREAK EVALUATION -->
       <section class="article-section" id="hypotheses">
-        <h2>5. Expected Findings &amp; Evaluation Ledger</h2>
+        <h2>5. Empirical Findings &amp; Newey–West HAC Structural Break Evaluation</h2>
 
-        <ol class="hypotheses-list">
-          <li><strong>Monetary Explanation of Payrolls (<code>PAYEMS</code>):</strong> The conditional BVAR is expected to account for the bulk of post-2022 deceleration in aggregate employment strictly through the monetary tightening channel.</li>
-          <li><strong>Unexplained Vacancy Contraction (<code>HWI</code>):</strong> Job openings are expected to exhibit a statistically significant, systematic negative conditional forecast error, consistent with a targeted corporate hiring freeze driven by generative AI automation.</li>
-          <li><strong>Non-Linear Detection Advantage:</strong> Deep learning (TFT/LSTM) and zero-shot foundation models are hypothesized to isolate this divergence more robustly than the linear BVAR through non-linear covariate processing.</li>
-        </ol>
+        <p>
+          Following Waggoner &amp; Zha (1999) exact structural conditional forecasting, the baseline VAR(2) estimated strictly on the pre-AI training sample (2010M1–2022M10) was conditioned on the realized post-2022 paths of the policy and financial block \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\). Systematic forecast errors over the 46-month out-of-sample evaluation window (November 2022 to August 2026) were tested for non-zero means via Newey–West (1987) HAC standard errors with Bartlett kernel bandwidth \(b = 3\).
+        </p>
 
         <div class="table-wrap">
-          <div class="table-title">Table 3. Post-2022 Out-of-Sample Evaluation Ledger (Pending Estimation)</div>
+          <div class="table-title">Table 3. Out-of-Sample Evaluation &amp; Newey–West HAC Structural Break Tests (2022M11–2026M8)</div>
           <table class="academic-table">
             <thead>
               <tr>
-                <th>Model</th>
-                <th class="num">PAYEMS RMSE</th>
-                <th class="num">HWI RMSE</th>
-                <th class="num">Mean PAYEMS Error</th>
-                <th class="num">Mean HWI Error</th>
+                <th>Target Variable &amp; Model Regime</th>
+                <th class="num">Mean Error (\(\bar{e}\))</th>
+                <th class="num">HAC Std. Error</th>
+                <th class="num">\(t\)-ratio</th>
+                <th class="num">\(p\)-value</th>
+                <th class="num">RMSE</th>
+                <th>Empirical Finding</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Unrestricted VAR(\(p\))</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
+                <td colspan="7" style="font-weight:600; background:var(--surface-sunken, #f8fafc); padding:6px 12px;">Job Openings (HWI, Thousands of Openings)</td>
               </tr>
               <tr>
-                <td>Bayesian VAR (Minnesota, Conditional)</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
+                <td>Unconditional VAR(2) Baseline</td>
+                <td class="num">−76.14</td>
+                <td class="num">29.79</td>
+                <td class="num">−2.556</td>
+                <td class="num">0.014</td>
+                <td class="num">347.16</td>
+                <td>Significant Overprediction</td>
+              </tr>
+              <tr style="background:rgba(192, 57, 43, 0.05); font-weight:600;">
+                <td>Policy-Conditioned VAR(2) (Waggoner–Zha)</td>
+                <td class="num" style="color:#C0392B;">−186.27</td>
+                <td class="num">32.51</td>
+                <td class="num" style="color:#C0392B;">−5.729</td>
+                <td class="num" style="color:#C0392B;">7.87 × 10<sup>−7</sup></td>
+                <td class="num">387.95</td>
+                <td style="color:#C0392B;">Acute Structural Collapse (\(p &lt; 10^{-6}\))</td>
               </tr>
               <tr>
-                <td>TFT / LSTM (Known Future Covariates)</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
+                <td colspan="7" style="font-weight:600; background:var(--surface-sunken, #f8fafc); padding:6px 12px;">Total Nonfarm Payrolls (PAYEMS, Monthly % Growth)</td>
               </tr>
               <tr>
-                <td>Chronos / TimesFM (Zero-Shot)</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
-                <td class="num">—</td>
+                <td>Unconditional VAR(2) Baseline</td>
+                <td class="num">−0.089%</td>
+                <td class="num">0.021%</td>
+                <td class="num">−4.161</td>
+                <td class="num">0.00014</td>
+                <td class="num">0.246%</td>
+                <td>Unconditional Overprediction</td>
+              </tr>
+              <tr style="background:rgba(31, 97, 141, 0.05); font-weight:600;">
+                <td>Policy-Conditioned VAR(2) (Waggoner–Zha)</td>
+                <td class="num" style="color:#1F618D;">+0.006%</td>
+                <td class="num">0.067%</td>
+                <td class="num" style="color:#1F618D;">+0.085</td>
+                <td class="num" style="color:#1F618D;">0.933</td>
+                <td class="num">0.586%</td>
+                <td style="color:#1F618D;">Zero Structural Break (\(p = 0.933\))</td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="figure-block" style="margin-top:24px;">
+          <div class="figure-heading">Figure 5. Conditional Counterfactual Trajectories vs. Realized Out-of-Sample Paths (2022–2026)</div>
+          <img src="assets/images/fig4_conditional_counterfactual_paths.png" alt="Conditional Counterfactual Trajectories" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0;" />
+          <div class="figure-caption">
+            Realized post-2022 trajectory (red solid) versus policy-conditioned VAR(2) counterfactual fixing realized <code>FEDFUNDS</code>, <code>M2SL</code>, and <code>BAA10YM</code> (blue dashed) and unconditional VAR(2) forecast (gray dotted). Conditioning on monetary policy fully aligns aggregate employment (<code>PAYEMS</code>), while widening the unexplained collapse in job openings (<code>HWI</code>).
+          </div>
+        </div>
+
+        <div class="figure-block" style="margin-top:24px;">
+          <div class="figure-heading">Figure 6. Structural Impulse Response Functions &amp; Cholesky Invariance Validation</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div>
+              <img src="assets/images/fig2_structural_irfs.png" alt="Structural IRFs" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0;" />
+              <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; text-align:center;">(a) Orthogonalized IRFs with 95% bootstrap CIs (24-month horizon)</p>
+            </div>
+            <div>
+              <img src="assets/images/fig3_ordering_robustness_irf.png" alt="Ordering Robustness" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0;" />
+              <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px; text-align:center;">(b) Cholesky ordering invariance check (Enders 2015, p. 298)</p>
+            </div>
+          </div>
+          <div class="figure-caption">
+            Structural transmission of monetary tightening and credit spread shocks to labor targets. Invariance check confirms that reversing recursive causal ordering yields identical responses due to near-zero contemporaneous residual correlation across blocks (\(|\hat{\rho}_{ij}| \le 0.129\)).
+          </div>
+        </div>
+
+        <div class="figure-block" style="margin-top:24px;">
+          <div class="figure-heading">Figure 7. Multivariate Outlier Audit &amp; COVID-19 Shock Decomposition (Wei 2019, Sec. 2.7)</div>
+          <img src="assets/images/fig1_covid_outlier_audit.png" alt="Multivariate Outlier Audit" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0;" />
+          <div class="figure-caption">
+            Tsay–Peña–Pankratz Multivariate Innovational Outlier (MIO) test statistic against the Bonferroni 1% critical value (24.36), identifying March 2020 (\(J_{I,h} = 107.61\)) and April 2020 (\(J_{I,h} = 38.18\)) as extreme shocks.
+          </div>
         </div>
       </section>
 
@@ -393,7 +440,7 @@
           </div>
           <pre class="bibtex-pre" id="bibtex-content">@misc{kalarica2026generative,
   author = {Kal Ar{\i}ca, Eda and {\c{S}}ekerci, Esra},
-  title  = {Isolating the Generative AI Labor Shock from Monetary Tightening},
+  title  = {Monetary Tightening or Generative AI? Isolating Post-2022 U.S. Labor Shocks via Conditional Forecasting},
   year   = {2026},
   month  = nov,
   url    = {https://esrasekerci.github.io/generative_ai_labor_shock/}
