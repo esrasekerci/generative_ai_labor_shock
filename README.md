@@ -18,7 +18,7 @@ Full data documentation, interactive figures, econometric specifications, and re
 
 ---
 
-## Repository Structure (Completed Through Phase 2)
+## Repository Structure
 
 ```text
 .
@@ -31,9 +31,9 @@ Full data documentation, interactive figures, econometric specifications, and re
 │   │   └── prepare_web_data.py                                  # Compiles fred_data.csv -> docs/assets/data/fred_macro.js
 │   └── econometrics/
 │       ├── theme_publication.R                                  # Unified IEEE print (3.5 in) & web widescreen (8.4 in) theme
-│       ├── 01_pretesting_and_cointegration.R                    # Phase 1: Unit-root battery, Wei outlier audit, Johansen tests
-│       ├── 02_var_estimation_and_structural_irf.R               # Phase 1: Common-sample LR, COVID-VAR(2), IRFs, WZ, HAC tests
-│       └── 03_bvar_minnesota_covid_scaling.R                    # Phase 2: Exact ML Lenza-Primiceri BVAR(2)/BVAR(3) & fan charts
+│       ├── 01_pretesting_and_cointegration.R                    # Unit-root battery, Wei outlier audit, Johansen tests
+│       ├── 02_var_estimation_and_structural_irf.R               # Common-sample LR, COVID-VAR(2), IRFs, WZ, HAC tests
+│       └── 03_bvar_minnesota_covid_scaling.R                    # Exact ML Lenza-Primiceri BVAR(2)/BVAR(3) & fan charts
 ├── outputs/
 │   ├── econometrics/                                            # Replicated empirical tables & test diagnostics (CSV & LaTeX)
 │   │   ├── table_ur_levels_train.csv
@@ -87,7 +87,7 @@ install.packages(c("vars", "urca", "MASS", "sandwich", "lmtest", "ggplot2", "pat
 
 ### Complete Replication (Single Command)
 
-To reproduce **every** table, diagnostic CSV, LaTeX table, IEEE print figure, and GitHub Pages figure across Phases 1 and 2 from raw `fred_data.csv` (~21 seconds):
+To reproduce **every** table, diagnostic CSV, LaTeX table, IEEE print figure, and GitHub Pages figure from raw `fred_data.csv` (~21 seconds):
 
 ```bash
 Rscript src/run_all.R
