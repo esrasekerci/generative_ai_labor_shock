@@ -20,7 +20,7 @@ Full data documentation, interactive figures, econometric specifications, and re
 .
 ├── fred_data.csv                                                # FRED-MD raw dataset (St. Louis Fed)
 ├── requirements.txt                                             # Python environment dependencies
-├── propejct_proposal/project_proposal_edakalarica_esrasekerci.pdf
+├── proposal/project_proposal_edakalarica_esrasekerci.pdf
 ├── src/data/prepare_web_data.py                                 # Compiles fred_data.csv -> docs/assets/data/fred_macro.js
 └── docs/                                                        # GitHub Pages static site (main -> /docs)
     ├── .nojekyll

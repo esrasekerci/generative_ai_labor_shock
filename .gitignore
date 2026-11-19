@@ -20,7 +20,7 @@ env/
 
 # Local literature PDFs & course assignment guidelines (kept locally only)
 papers/
-propejct_proposal/STAT563_Project_Proposal_Guidelines.pdf
+proposal/STAT563_Project_Proposal_Guidelines.pdf
 
 # Model checkpoints & temporary outputs
 checkpoints/
