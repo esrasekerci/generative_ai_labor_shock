@@ -297,70 +297,83 @@ irf_alt1_ff_pay <- tidy_irf(irf_alt1, "FEDFUNDS", "PAYEMS", "Labor-First Orderin
 
 irf_plot_df <- rbind(irf_df_ff_hwi, irf_df_ff_pay, irf_df_sp_hwi, irf_df_sp_pay)
 irf_plot_df$PanelLabel <- factor(
-  paste0(irf_plot_df$Impulse, " Shock -> ", irf_plot_df$Response),
+  paste0(irf_plot_df$Impulse, " -> ", irf_plot_df$Response),
   levels = c(
-    "FEDFUNDS Shock -> HWI",
-    "FEDFUNDS Shock -> PAYEMS",
-    "BAA10YM Shock -> HWI",
-    "BAA10YM Shock -> PAYEMS"
+    "FEDFUNDS -> HWI",
+    "FEDFUNDS -> PAYEMS",
+    "BAA10YM -> HWI",
+    "BAA10YM -> PAYEMS"
+  ),
+  labels = c(
+    "(a) FEDFUNDS -> HWI",
+    "(b) FEDFUNDS -> PAYEMS",
+    "(c) BAA10YM -> HWI",
+    "(d) BAA10YM -> PAYEMS"
   )
 )
 
-# Plot Publication IRFs (Figure 2 for Overleaf)
+# Plot Publication IRFs (Figure 2: IEEE Single Column 3.5in)
 p_irf <- ggplot(irf_plot_df, aes(x = Horizon, y = Point)) +
   geom_ribbon(aes(ymin = Lower, ymax = Upper), fill = "#2980B9", alpha = 0.22) +
-  geom_line(color = "#1F618D", linewidth = 0.9) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "#7F8C8D", linewidth = 0.5) +
+  geom_line(color = "#1F618D", linewidth = 0.75) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "#7F8C8D", linewidth = 0.4) +
   facet_wrap(~PanelLabel, scales = "free_y", ncol = 2) +
   labs(
-    title = "Structural Impulse Response Functions (Cholesky Identification)",
-    subtitle = "Responses of labor target variables to 1-SD monetary tightening and credit spread shocks with 95% bootstrap CIs",
     x = "Forecast Horizon (Months)",
     y = "Orthogonalized Response"
   ) +
-  theme_minimal(base_size = 9.5) +
+  theme_minimal(base_size = 8.5) +
   theme(
-    strip.text = element_text(face = "bold", size = 9),
+    strip.text = element_text(face = "bold", size = 8),
+    strip.background = element_rect(fill = "#F2F4F4", color = NA),
     panel.grid.minor = element_blank(),
-    plot.title = element_text(face = "bold", size = 10)
+    panel.spacing = unit(0.5, "lines"),
+    axis.title = element_text(size = 8),
+    axis.text = element_text(size = 7),
+    plot.margin = margin(t = 4, r = 6, b = 4, l = 4, "pt")
   )
 
-ggsave("outputs/figures/fig2_structural_irfs.pdf", p_irf, width = 7.0, height = 4.8)
-ggsave("outputs/figures/fig2_structural_irfs.png", p_irf, width = 7.0, height = 4.8, dpi = 300)
+ggsave("outputs/figures/fig2_structural_irfs.pdf", p_irf, width = 3.5, height = 2.8)
+ggsave("outputs/figures/fig2_structural_irfs.png", p_irf, width = 3.5, height = 2.8, dpi = 300)
 
-# Ordering Robustness Comparison (Figure 3 for Overleaf)
+# Ordering Robustness Comparison (Figure 3: IEEE Single Column 3.5in)
 comp_df <- rbind(
   cbind(irf_df_ff_hwi, Ordering = "Baseline [Policy First]"),
   cbind(irf_alt1_ff_hwi, Ordering = "Alternative [Labor First]"),
   cbind(irf_df_ff_pay, Ordering = "Baseline [Policy First]"),
   cbind(irf_alt1_ff_pay, Ordering = "Alternative [Labor First]")
 )
-comp_df$ResponseVar <- ifelse(comp_df$Response == "HWI", "Job Openings (HWI)", "Nonfarm Payrolls (PAYEMS)")
+comp_df$ResponseVar <- ifelse(comp_df$Response == "HWI", "(a) Job Openings (HWI)", "(b) Payrolls (PAYEMS)")
 
 p_robust_irf <- ggplot(comp_df, aes(x = Horizon, y = Point, color = Ordering, linetype = Ordering)) +
-  geom_line(linewidth = 0.9) +
+  geom_line(linewidth = 0.75) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "#7F8C8D", linewidth = 0.4) +
   facet_wrap(~ResponseVar, scales = "free_y", ncol = 2) +
   scale_color_manual(values = c("Baseline [Policy First]" = "#1F618D", "Alternative [Labor First]" = "#C0392B")) +
   scale_linetype_manual(values = c("Baseline [Policy First]" = "solid", "Alternative [Labor First]" = "dashed")) +
   labs(
-    title = "Cholesky Ordering Invariance Check (Enders 2015, p. 298)",
-    subtitle = "Comparing policy-rate impulse responses across baseline vs. reverse-ordered labor blocks",
     x = "Forecast Horizon (Months)",
     y = "Impulse Response",
-    color = "Identification Ordering",
-    linetype = "Identification Ordering"
+    color = "Ordering",
+    linetype = "Ordering"
   ) +
-  theme_minimal(base_size = 9.5) +
+  theme_minimal(base_size = 8.5) +
   theme(
     legend.position = "top",
-    strip.text = element_text(face = "bold", size = 9),
+    legend.text = element_text(size = 7),
+    legend.title = element_text(size = 7.5, face = "bold"),
+    legend.margin = margin(b = -2),
+    strip.text = element_text(face = "bold", size = 8),
+    strip.background = element_rect(fill = "#F2F4F4", color = NA),
     panel.grid.minor = element_blank(),
-    plot.title = element_text(face = "bold", size = 10)
+    panel.spacing = unit(0.5, "lines"),
+    axis.title = element_text(size = 8),
+    axis.text = element_text(size = 7),
+    plot.margin = margin(t = 2, r = 6, b = 4, l = 4, "pt")
   )
 
-ggsave("outputs/figures/fig3_ordering_robustness_irf.pdf", p_robust_irf, width = 7.0, height = 3.6)
-ggsave("outputs/figures/fig3_ordering_robustness_irf.png", p_robust_irf, width = 7.0, height = 3.6, dpi = 300)
+ggsave("outputs/figures/fig3_ordering_robustness_irf.pdf", p_robust_irf, width = 3.5, height = 2.4)
+ggsave("outputs/figures/fig3_ordering_robustness_irf.png", p_robust_irf, width = 3.5, height = 2.4, dpi = 300)
 
 # ------------------------------------------------------------------------------
 # 6. Waggoner-Zha (1999) Conditional Forecasting Framework
@@ -538,9 +551,15 @@ plot_traj_df <- rbind(
   data.frame(date = dates_test, Value = lvl_cnd_pay,  Type = "Policy-Conditioned VAR(2)", Series = "Nonfarm Payrolls (PAYEMS, thousands)")
 )
 
+plot_traj_df$SeriesLabel <- ifelse(
+  grepl("HWI", plot_traj_df$Series),
+  "(a) Job Openings (HWI, thousands)",
+  "(b) Payroll Employment (PAYEMS, thousands)"
+)
+
 p_traj <- ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype = Type)) +
-  geom_line(linewidth = 0.95) +
-  facet_wrap(~Series, scales = "free_y", ncol = 1) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~SeriesLabel, scales = "free_y", ncol = 1) +
   scale_color_manual(values = c(
     "Realized Post-2022" = "#C0392B",
     "Policy-Conditioned VAR(2)" = "#1F618D",
@@ -551,23 +570,28 @@ p_traj <- ggplot(plot_traj_df, aes(x = date, y = Value, color = Type, linetype =
     "Policy-Conditioned VAR(2)" = "dashed",
     "Unconditional VAR(2)" = "dotted"
   )) +
-  scale_x_date(date_breaks = "6 months", date_labels = "%b %Y") +
+  scale_x_date(date_breaks = "12 months", date_labels = "%b %Y") +
   scale_y_continuous(labels = comma) +
   labs(
-    title = "Conditional Counterfactual Tracking of U.S. Labor Targets (2022–2026)",
-    subtitle = "Realized trajectory vs. policy-conditioned counterfactual fixing realized FEDFUNDS, M2SL, and BAA10YM",
     x = NULL, y = "Levels (Thousands)",
     color = "Trajectory", linetype = "Trajectory"
   ) +
-  theme_minimal(base_size = 9.5) +
+  theme_minimal(base_size = 8.5) +
   theme(
     legend.position = "top",
-    strip.text = element_text(face = "bold", size = 9.5),
+    legend.text = element_text(size = 7),
+    legend.title = element_text(size = 7.5, face = "bold"),
+    legend.margin = margin(b = -2),
+    strip.text = element_text(face = "bold", size = 8),
+    strip.background = element_rect(fill = "#F2F4F4", color = NA),
     panel.grid.minor = element_blank(),
-    plot.title = element_text(face = "bold", size = 10)
+    panel.spacing = unit(0.5, "lines"),
+    axis.title = element_text(size = 8),
+    axis.text = element_text(size = 7),
+    plot.margin = margin(t = 2, r = 6, b = 4, l = 4, "pt")
   )
 
-ggsave("outputs/figures/fig4_conditional_counterfactual_paths.pdf", p_traj, width = 7.0, height = 5.2)
-ggsave("outputs/figures/fig4_conditional_counterfactual_paths.png", p_traj, width = 7.0, height = 5.2, dpi = 300)
+ggsave("outputs/figures/fig4_conditional_counterfactual_paths.pdf", p_traj, width = 3.5, height = 3.6)
+ggsave("outputs/figures/fig4_conditional_counterfactual_paths.png", p_traj, width = 3.5, height = 3.6, dpi = 300)
 
 cat("\nStep 2 completed successfully. All figures and tables exported to outputs/\n")
