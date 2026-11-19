@@ -30,6 +30,7 @@
         <li><a href="#exploration">Exploration</a></li>
         <li><a href="#methodology">Methodology</a></li>
         <li><a href="#findings">Empirical Findings</a></li>
+        <li><a href="#bvar">Bayesian VAR</a></li>
         <li><a href="#references">References</a></li>
         <li><a href="https://github.com/esrasekerci/generative_ai_labor_shock" target="_blank" rel="noopener">Repository ↗</a></li>
       </ul>
@@ -97,7 +98,15 @@
             <li><a href="#statistical-rigor" style="color:var(--text-muted);">5.6 Statistical Rigor</a></li>
           </ul>
         </li>
-        <li><a href="#references">6. References &amp; BibTeX</a></li>
+        <li>
+          <a href="#bvar">6. Bayesian VAR &amp; Volatility Scaling</a>
+          <ul class="toc-sublist" style="padding-left:14px; font-size:0.83rem; list-style:none; margin:4px 0;">
+            <li><a href="#bvar-prior" style="color:var(--text-muted);">6.1 Minnesota Prior &amp; COVID Scaling</a></li>
+            <li><a href="#bvar-bands" style="color:var(--text-muted);">6.2 Posterior Credible Bands</a></li>
+            <li><a href="#bvar-comparison" style="color:var(--text-muted);">6.3 Model Comparison Ledger</a></li>
+          </ul>
+        </li>
+        <li><a href="#references">7. References &amp; BibTeX</a></li>
       </ul>
     </aside>
 
@@ -925,9 +934,97 @@
         </ol>
       </section>
 
-      <!-- 6. REFERENCES -->
+      <!-- 6. BAYESIAN VAR & COVID VOLATILITY SCALING -->
+      <section class="article-section" id="bvar">
+        <h2>6. Bayesian VAR &amp; COVID-19 Volatility Scaling (Phase 2)</h2>
+
+        <h3 id="bvar-prior">6.1 Minnesota Shrinkage Prior &amp; Lenza–Primiceri (2022) Scaling</h3>
+        <p>
+          To ensure that empirical findings are not sensitive to over-parameterization or pandemic outliers, we formulate a Bayesian Vector Autoregression (BVAR) with conjugate Normal-Inverse-Wishart Minnesota shrinkage priors (Giannone, Lenza &amp; Primiceri 2015; Doan, Litterman &amp; Sims 1984). For our stationary \(I(0)\) differenced system, the prior mean is centered on white noise (\(\mathbb{E}[A_{l, ij}] = 0\)) with overall shrinkage tightness \(\lambda_1 = 0.2\) and harmonic lag decay \(\lambda_3 = 1.0\).
+        </p>
+        <p>
+          Following <strong>Lenza &amp; Primiceri (2022, <em>JAE</em>)</strong>, extreme pandemic innovations in the training sample are modeled as \(\bm{\varepsilon}_t \sim \mathcal{N}(\bm{0}, s_t^2 \bm{\Sigma})\). Using the Tsay–Peña–Pankratz outlier audit diagnostics, observation weights are down-scaled for the initial COVID onset: \(\bar{s}_{\text{Mar20}} = 5.40\), \(\bar{s}_{\text{Apr20}} = 1.73\), and \(\bar{s}_{\text{May20}} = 1.00\). This prevents the unprecedented March–April 2020 variance from distorting posterior coefficient shrinkage.
+        </p>
+
+        <h3 id="bvar-bands" style="margin-top:28px;">6.2 Posterior Credible Bands under Conditional Policy Paths</h3>
+        <p>
+          We generate 500 stationary posterior draws from the joint Normal-Inverse-Wishart posterior distribution. For each draw, exact Waggoner &amp; Zha (1999) structural conditional forecasts are simulated over the 46-month evaluation horizon (2022M11–2026M8), conditioning on the realized paths of \(\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}\).
+        </p>
+
+        <div class="figure-block">
+          <div class="figure-heading">Figure 8. BVAR Posterior Credible Bands for U.S. Labor Targets (2022–2026)</div>
+          <div style="max-width:760px; margin:14px auto;">
+            <img src="assets/images/fig5_bvar_posterior_bands.png" alt="BVAR Posterior Credible Bands" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
+          </div>
+          <div class="figure-caption">
+            Out-of-sample conditional projections under the Minnesota BVAR with COVID-19 volatility scaling. Red solid curve shows realized data; blue dashed curve represents the posterior median conditional trajectory; dark blue and light blue shaded regions denote 68% and 95% posterior credible intervals across 500 draws; gray dotted curve is the unconditional median path.
+          </div>
+        </div>
+
+        <h3 id="bvar-comparison" style="margin-top:28px;">6.3 Model Comparison Ledger: Classical VAR vs. Bayesian VAR</h3>
+        <p>
+          Table 5 compares conditional forecast error metrics across the classical unrestricted VAR(2), standard unscaled BVAR, and the full Lenza–Primiceri COVID-scaled BVAR:
+        </p>
+
+        <div class="table-container" style="margin: 16px 0 24px 0;">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Model Specification</th>
+                <th style="text-align:center;">Job Openings (\(\Delta\text{HWI}\)) Mean Error</th>
+                <th style="text-align:center;">95% Credible Interval</th>
+                <th style="text-align:center;">\(P(\bar{e} &lt; 0)\)</th>
+                <th style="text-align:center;">Total Payrolls (\(\Delta\log\text{PAYEMS}\)) Mean Error</th>
+                <th style="text-align:center;">95% Credible Interval</th>
+                <th style="text-align:center;">\(P(\bar{e} &lt; 0)\)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600;">Unrestricted VAR(2) (OLS)</td>
+                <td style="text-align:center;">-186.27 k/mo</td>
+                <td style="text-align:center;">[-285.70, -86.84]</td>
+                <td style="text-align:center;">1.000</td>
+                <td style="text-align:center;">+0.0056 %/mo</td>
+                <td style="text-align:center;">[-0.1655, +0.1768]</td>
+                <td style="text-align:center;">0.466</td>
+              </tr>
+              <tr>
+                <td style="font-weight:600;">Minnesota BVAR (No COVID Scaling)</td>
+                <td style="text-align:center;">-191.86 k/mo</td>
+                <td style="text-align:center;">[-290.85, -92.87]</td>
+                <td style="text-align:center;">1.000</td>
+                <td style="text-align:center;">-0.0567 %/mo</td>
+                <td style="text-align:center;">[-0.2084, +0.0951]</td>
+                <td style="text-align:center;">0.782</td>
+              </tr>
+              <tr style="background:#f8fafc; font-weight:600;">
+                <td style="color:var(--primary);">Minnesota BVAR + COVID Scaling (Lenza–Primiceri 2022)</td>
+                <td style="text-align:center; color:#c53030;">-210.23 k/mo</td>
+                <td style="text-align:center;">[-288.71, -128.58]</td>
+                <td style="text-align:center; color:#c53030;">1.000</td>
+                <td style="text-align:center;">-0.0757 %/mo</td>
+                <td style="text-align:center;">[-0.2370, +0.0853]</td>
+                <td style="text-align:center;">0.820</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="figure-block">
+          <div class="figure-heading">Figure 9. Multi-Specification Counterfactual Comparison (Classical vs. Bayesian)</div>
+          <div style="max-width:760px; margin:14px auto;">
+            <img src="assets/images/fig6_bvar_vs_var_counterfactual.png" alt="Multi-Specification Comparison" style="width:100%; height:auto; border-radius:6px; display:block; border:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,0.06);" />
+          </div>
+          <div class="figure-caption">
+            Overlaid conditional counterfactual paths comparing Unrestricted VAR(2) (gray dotdash), Standard BVAR (orange dashed), and COVID-Scaled BVAR (blue solid) against realized labor market data (red solid). The cross-model convergence demonstrates that the acute post-2022 vacancy contraction is invariant to shrinkage priors and outlier volatility adjustments.
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. REFERENCES -->
       <section class="article-section" id="references">
-        <h2>6. References &amp; Replication Code</h2>
+        <h2>7. References &amp; Replication Code</h2>
 
         <ol class="ref-list">
           <li>Ansari, A. F., et al. (2024). Chronos: Learning the language of time series. <em>Transactions on Machine Learning Research</em>.</li>
