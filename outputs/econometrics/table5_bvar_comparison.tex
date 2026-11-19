@@ -2,26 +2,25 @@
 \centering
 \caption{BVAR vs. VAR Conditional Counterfactual Metrics}
 \label{tab:bvar_comparison}
-\begin{threeparttable}
-\columnwidth
-\scriptsize
-\begin{tabular*}{\columnwidth}{l@{\extracolsep{\fill}}ccc}
+\begin{minipage}{\columnwidth}
+\centering
+\fontsize{7.2pt}{8.6pt}\selectfont
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccc}
 \toprule
 \textbf{Model Specification} & \textbf{Mean Error} & \textbf{95\% Interval} & $P(\bar{e} < 0)$ \\
 \midrule
 \multicolumn{4}{l}{\textit{Panel A: Job Openings ($\Delta\text{HWI}$, thousand postings/month)}} \\[2pt]
-Unrestricted VAR(2) & -186.27 & [-285.7, -86.8] & 1.000 \\
-Minnesota BVAR & -191.86 & [-290.9, -92.9] & 1.000 \\
-\textbf{BVAR + COVID Scaling} & \textbf{-210.23} & \textbf{[-288.7, -128.6]} & \textbf{1.000} \\[4pt]
+Unrestricted VAR(2) (OLS) & $-186.27$ & $[-285.7, -86.8]$ & $1.000$ \\
+Minnesota BVAR (Unscaled) & $-191.86$ & $[-290.9, -92.9]$ & $1.000$ \\
+\textbf{Minnesota BVAR + COVID Scaling} & $\mathbf{-210.23}$ & $\mathbf{[-288.7, -128.6]}$ & $\mathbf{1.000}$ \\[4pt]
 \multicolumn{4}{l}{\textit{Panel B: Total Nonfarm Payrolls ($\Delta\log\text{PAYEMS}$, \%/month)}} \\[2pt]
-Unrestricted VAR(2) & +0.0056 & [-0.166, +0.177] & 0.466 \\
-Minnesota BVAR & -0.0567 & [-0.208, +0.095] & 0.782 \\
-\textbf{BVAR + COVID Scaling} & \textbf{-0.0757} & \textbf{[-0.237, +0.085]} & \textbf{0.820} \\
+Unrestricted VAR(2) (OLS) & $+0.0056$ & $[-0.166, +0.177]$ & $0.466$ \\
+Minnesota BVAR (Unscaled) & $-0.0567$ & $[-0.208, +0.095]$ & $0.782$ \\
+\textbf{Minnesota BVAR + COVID Scaling} & $\mathbf{-0.0757}$ & $\mathbf{[-0.237, +0.085]}$ & $\mathbf{0.820}$ \\
 \bottomrule
-\end{tabular*}
-\begin{tablenotes}[flushleft]
-\tiny
-\item \textit{Notes:} Out-of-sample horizon $H = 46$ (2022M11--2026M8). Conditioned on realized $\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}$. 95\% credible intervals computed over 500 posterior draws. COVID scaling follows Lenza and Primiceri (2022).
-\end{tablenotes}
-\end{threeparttable}
+\end{tabular}
+\vskip 2pt
+{\scriptsize \textit{Notes}: Out-of-sample evaluation $H = 46$ (2022M11--2026M8). Conditioning block $\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}$. 95\% credible intervals computed over 500 posterior draws. COVID scaling follows Lenza \& Primiceri (2022) with $\bar{s}_{\text{Mar20}} = 5.40$ and $\bar{s}_{\text{Apr20}} = 1.73$.\par}
+\end{minipage}
 \end{table}

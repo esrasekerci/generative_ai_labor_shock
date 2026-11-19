@@ -401,28 +401,28 @@ tex_single_col <- sprintf(
 \\centering
 \\caption{BVAR vs. VAR Conditional Counterfactual Metrics}
 \\label{tab:bvar_comparison}
-\\begin{threeparttable}
-\\columnwidth
-\\scriptsize
-\\begin{tabular*}{\\columnwidth}{l@{\\extracolsep{\\fill}}ccc}
+\\begin{minipage}{\\columnwidth}
+\\centering
+\\fontsize{6.8pt}{8.0pt}\\selectfont
+\\setlength{\\tabcolsep}{2.2pt}
+\\begin{tabular}{lccc}
 \\toprule
-\\textbf{Model Specification} & \\textbf{Mean Error} & \\textbf{95\\%% Interval} & $P(\\bar{e} < 0)$ \\\\
+\\textbf{Model Specification} & $\\bar{e}$ & \\textbf{95\\%% Credible Interval} & $P(\\bar{e} < 0)$ \\\\
 \\midrule
-\\multicolumn{4}{l}{\\textit{Panel A: Job Openings ($\\Delta\\text{HWI}$, thousand postings/month)}} \\\\[2pt]
-Unrestricted VAR(2) & %.2f & [%.1f, %.1f] & 1.000 \\\\
-Minnesota BVAR & %.2f & [%.1f, %.1f] & 1.000 \\\\
-\\textbf{BVAR + COVID Scaling} & \\textbf{%.2f} & \\textbf{[%.1f, %.1f]} & \\textbf{%.3f} \\\\[4pt]
-\\multicolumn{4}{l}{\\textit{Panel B: Total Nonfarm Payrolls ($\\Delta\\log\\text{PAYEMS}$, \\%%/month)}} \\\\[2pt]
-Unrestricted VAR(2) & %+.4f & [%.3f, %+.3f] & 0.466 \\\\
-Minnesota BVAR & %+.4f & [%.3f, %+.3f] & 0.782 \\\\
-\\textbf{BVAR + COVID Scaling} & \\textbf{%+.4f} & \\textbf{[%.3f, %+.3f]} & \\textbf{%.3f} \\\\
+\\multicolumn{4}{l}{\\textit{Job Openings ($\\Delta\\text{HWI}$, thousands of postings/month)}} \\\\
+Unrestricted VAR(2) (OLS) & $%.2f$ & [$%.1f$, $%.1f$] & 1.000 \\\\
+Minnesota BVAR (Unscaled) & $%.2f$ & [$%.1f$, $%.1f$] & 1.000 \\\\
+\\textbf{BVAR + COVID Scaling} & $\\mathbf{%.2f}$ & $\\mathbf{[$%.1f$, $%.1f$]}$ & $\\mathbf{%.3f}$ \\\\
+\\midrule
+\\multicolumn{4}{l}{\\textit{Total Nonfarm Payrolls ($\\Delta\\log\\text{PAYEMS}$, monthly \\%% growth)}} \\\\
+Unrestricted VAR(2) (OLS) & $%+.4f$ & [$%.3f$, $%+.3f$] & 0.466 \\\\
+Minnesota BVAR (Unscaled) & $%+.4f$ & [$%.3f$, $%+.3f$] & 0.782 \\\\
+\\textbf{BVAR + COVID Scaling} & $\\mathbf{%+.4f}$ & $\\mathbf{[$%.3f$, $%+.3f$]}$ & $\\mathbf{%.3f}$ \\\\
 \\bottomrule
-\\end{tabular*}
-\\begin{tablenotes}[flushleft]
-\\tiny
-\\item \\textit{Notes:} Out-of-sample horizon $H = 46$ (2022M11--2026M8). Conditioned on realized $\\mathcal{C} = \\{\\text{FEDFUNDS}, \\text{M2SL}, \\text{BAA10YM}\\}$. 95\\%% credible intervals computed over 500 posterior draws. COVID scaling follows Lenza and Primiceri (2022).
-\\end{tablenotes}
-\\end{threeparttable}
+\\end{tabular}
+\\vskip 2pt
+{\\scriptsize \\textit{Notes}: Out-of-sample evaluation $H = 46$ (2022M11--2026M8). Conditioning block $\\mathcal{C} = \\{\\text{FEDFUNDS}, \\text{M2SL}, \\text{BAA10YM}\\}$. 95\\%% credible intervals computed over 500 posterior draws. COVID scaling follows Lenza \\& Primiceri (2022) with $\\bar{s}_{\\text{Mar20}} = %.2f$ and $\\bar{s}_{\\text{Apr20}} = %.2f$.\\par}
+\\end{minipage}
 \\end{table}
 ",
 comp_table$HWI_Mean_Error[1], comp_table$HWI_CI_Low[1], comp_table$HWI_CI_High[1],
@@ -430,7 +430,8 @@ comp_table$HWI_Mean_Error[2], comp_table$HWI_CI_Low[2], comp_table$HWI_CI_High[2
 comp_table$HWI_Mean_Error[3], comp_table$HWI_CI_Low[3], comp_table$HWI_CI_High[3], comp_table$HWI_Prob_Neg[3],
 comp_table$PAYEMS_Mean_Error[1], comp_table$PAYEMS_CI_Low[1], comp_table$PAYEMS_CI_High[1],
 comp_table$PAYEMS_Mean_Error[2], comp_table$PAYEMS_CI_Low[2], comp_table$PAYEMS_CI_High[2],
-comp_table$PAYEMS_Mean_Error[3], comp_table$PAYEMS_CI_Low[3], comp_table$PAYEMS_CI_High[3], comp_table$PAYEMS_Prob_Neg[3]
+comp_table$PAYEMS_Mean_Error[3], comp_table$PAYEMS_CI_Low[3], comp_table$PAYEMS_CI_High[3], comp_table$PAYEMS_Prob_Neg[3],
+s_mar20, s_apr20
 )
 
 cat(tex_single_col, file = "outputs/econometrics/table5_bvar_comparison.tex")
