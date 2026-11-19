@@ -1,4 +1,4 @@
-# Separating the Generative AI Labor Shock from Monetary Tightening
+# Isolating the Generative AI Labor Shock from Monetary Tightening
 
 **Middle East Technical University — Department of Statistics**
 **STAT 563: Multivariate Time Series Analysis · Track A (Empirical Project)**
@@ -6,9 +6,9 @@
 
 [![Track A](https://img.shields.io/badge/STAT%20563-Track%20A%20Empirical-B5121B?style=flat-square)](#)
 [![Data: FRED-MD](https://img.shields.io/badge/Data-FRED--MD%20(k%3D6)-102A43?style=flat-square)](https://www.stlouisfed.org/research/economists/mccracken/fred-databases)
-[![GitHub Pages](https://img.shields.io/badge/Live%20Site-GitHub%20Pages-15803D?style=flat-square)](https://esrasekerci.github.io/stat563-ai-labor-shock/)
+[![GitHub Pages](https://img.shields.io/badge/Live%20Site-GitHub%20Pages-15803D?style=flat-square)](https://esrasekerci.github.io/generative_ai_labor_shock/)
 
-**Live Project Website:** https://esrasekerci.github.io/stat563-ai-labor-shock/
+**Live Project Website:** https://esrasekerci.github.io/generative_ai_labor_shock/
 
 ---
 
@@ -98,8 +98,8 @@ You can also open `docs/index.html` directly in your browser.
 
 This repository is deployed via **GitHub Pages** from branch `main` and folder `/docs`:
 
-- **Repository:** https://github.com/esrasekerci/stat563-ai-labor-shock
-- **Live Site:** https://esrasekerci.github.io/stat563-ai-labor-shock/
+- **Repository:** https://github.com/esrasekerci/generative_ai_labor_shock
+- **Live Site:** https://esrasekerci.github.io/generative_ai_labor_shock/
 
 Any push to `main` (via GitHub Desktop or CLI) automatically updates the live site.
 
