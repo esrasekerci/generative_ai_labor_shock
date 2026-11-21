@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Monetary Tightening or Generative AI? Isolating Post-2022 U.S. Labor Shocks via Conditional Forecasting</title>
   <meta name="description" content="METU STAT 563 Track A empirical study by Eda Kal Arıca & Esra Şekerci comparing Bayesian VARs, deep learning (TFT/LSTM), and zero-shot foundation models on FRED-MD macro-financial series." />
 
@@ -36,7 +36,25 @@
         <li><a href="#references">References</a></li>
         <li><a href="https://github.com/esrasekerci/generative_ai_labor_shock" target="_blank" rel="noopener">Repository ↗</a></li>
       </ul>
+      <button class="mobile-nav-toggle" id="mobile-nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Toggle section menu">
+        <span>Contents</span>
+        <span aria-hidden="true">☰</span>
+      </button>
     </div>
+    <nav class="mobile-drawer" id="mobile-drawer" aria-label="Mobile section navigation">
+      <ul class="mobile-drawer-list">
+        <li><a href="#motivation">1. Research Question &amp; Motivation</a></li>
+        <li><a href="#data">2. Data &amp; Macro-Financial System</a></li>
+        <li><a href="#exploration">3. Empirical Exploration &amp; Dynamics</a></li>
+        <li><a href="#methodology">4. Econometric Methodology &amp; Pre-Testing</a></li>
+        <li><a href="#findings">5. Part A: Counterfactual Findings</a></li>
+        <li><a href="#bvar">6. Bayesian VAR &amp; COVID-19 Scaling</a></li>
+        <li><a href="#falsification">7. Attribution Falsification Battery</a></li>
+        <li><a href="#rolling-eval">8. Part B: Rolling-Origin Evaluation (h = 1–12)</a></li>
+        <li><a href="#references">9. References &amp; BibTeX</a></li>
+        <li><a class="repo-link" href="https://github.com/esrasekerci/generative_ai_labor_shock" target="_blank" rel="noopener">GitHub Repository ↗</a></li>
+      </ul>
+    </nav>
   </header>
 
   <section class="masthead" id="top">
@@ -148,6 +166,8 @@
 
         <div class="figure-block">
           <div class="figure-heading">Figure 1. Structural Transmission &amp; Conditioning Design</div>
+          <div class="mobile-swipe-hint">Swipe diagram horizontally →</div>
+          <div class="schematic-scroll">
           <svg class="schematic-svg" viewBox="0 0 880 285" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Macro-financial transmission from monetary policy to labor markets">
             <defs>
               <marker id="arrow-navy" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
@@ -208,6 +228,7 @@
 
             <path d="M 740 56 L 740 110" stroke="#B5121B" stroke-width="1.8" stroke-dasharray="5 3" fill="none" marker-end="url(#arrow-crimson)"/>
           </svg>
+          </div>
         </div>
 
         <div class="table-wrap">
@@ -968,7 +989,7 @@
         <h3 id="structural-irfs" style="margin-top:28px;">5.3 Structural Impulse Responses &amp; Identification Invariance Validation</h3>
         <div class="figure-block" style="margin-top:12px;">
           <div class="figure-heading">Figure 6. Structural Impulse Response Functions &amp; Cholesky Invariance Validation</div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; max-width:820px; margin:14px auto; align-items:start;">
+          <div class="figure-grid-2">
             <div>
               <img src="assets/images/fig2_structural_irfs.png" alt="Structural IRFs" style="width:100%; height:auto; border-radius:6px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);" />
               <p style="font-size:0.84rem; color:var(--text-muted); margin-top:6px; text-align:center;">(a) Orthogonalized IRFs with 95% bootstrap CIs (24-month horizon)</p>

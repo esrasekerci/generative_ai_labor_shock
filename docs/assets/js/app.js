@@ -15,11 +15,21 @@
 
   const FONT_SANS = '"Source Sans 3", -apple-system, BlinkMacSystemFont, sans-serif';
   const FONT_MONO = '"JetBrains Mono", monospace';
-  const PLOTLY_CONFIG = {
-    responsive: true,
-    displaylogo: false,
-    modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"],
-  };
+
+  function isMobileViewport() {
+    return window.innerWidth <= 680;
+  }
+
+  function getPlotlyConfig() {
+    const mobile = isMobileViewport();
+    return {
+      responsive: true,
+      displaylogo: false,
+      displayModeBar: !mobile,
+      scrollZoom: false,
+      modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"],
+    };
+  }
 
   const state = {
     fig1Scale: "zscore",
@@ -197,40 +207,57 @@
       },
     ];
 
+    const mobile = isMobileViewport();
+
     const layout = {
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "#FFFFFF",
-      font: { family: FONT_SANS, color: "#17202A", size: 12.5 },
-      margin: { l: 58, r: 18, t: 20, b: 42 },
-      hovermode: "x unified",
+      font: { family: FONT_SANS, color: "#17202A", size: mobile ? 11 : 12.5 },
+      margin: mobile ? { l: 42, r: 8, t: 16, b: 86 } : { l: 58, r: 18, t: 20, b: 42 },
+      hovermode: mobile ? "closest" : "x unified",
+      dragmode: mobile ? false : "zoom",
       xaxis: {
         range: xRange,
         showgrid: true,
         gridcolor: "#EEF2F6",
         zeroline: false,
-        tickfont: { family: FONT_MONO, size: 11 },
+        fixedrange: mobile,
+        tickfont: { family: FONT_MONO, size: mobile ? 9.5 : 11 },
       },
       yaxis: {
         title: {
-          text:
-            state.fig1Scale === "zscore"
+          text: mobile
+            ? state.fig1Scale === "zscore"
+              ? "Z-Score (σ)"
+              : "Oct 2022 = 100"
+            : state.fig1Scale === "zscore"
               ? "Standard Deviations from Mean (Z-Score)"
               : "Index (October 2022 = 100)",
-          font: { size: 12, color: "#434E5E" },
+          font: { size: mobile ? 10.5 : 12, color: "#434E5E" },
         },
         showgrid: true,
         gridcolor: "#EEF2F6",
         zeroline: false,
-        tickfont: { family: FONT_MONO, size: 11 },
+        fixedrange: mobile,
+        tickfont: { family: FONT_MONO, size: mobile ? 9.5 : 11 },
       },
-      legend: {
-        orientation: "h",
-        yanchor: "bottom",
-        y: 1.02,
-        xanchor: "left",
-        x: 0,
-        font: { size: 12 },
-      },
+      legend: mobile
+        ? {
+            orientation: "h",
+            yanchor: "top",
+            y: -0.18,
+            xanchor: "center",
+            x: 0.5,
+            font: { size: 10.5 },
+          }
+        : {
+            orientation: "h",
+            yanchor: "bottom",
+            y: 1.02,
+            xanchor: "left",
+            x: 0,
+            font: { size: 12 },
+          },
       shapes,
       annotations:
         state.fig1Range === "postai"
@@ -240,7 +267,7 @@
             : annotations,
     };
 
-    Plotly.react("plot-comovement", traces, layout, PLOTLY_CONFIG);
+    Plotly.react("plot-comovement", traces, layout, getPlotlyConfig());
   }
 
   /* ------------------ Figure 3: Series Level & Transform ----------------- */
@@ -316,41 +343,47 @@
       hovertemplate: `<b>${meta.transformFormula}</b>: %{y:+.3f}<extra></extra>`,
     };
 
+    const mobile = isMobileViewport();
+
     const layout = {
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "#FFFFFF",
-      font: { family: FONT_SANS, color: "#17202A", size: 12 },
-      margin: { l: 68, r: 18, t: 16, b: 38 },
-      hovermode: "x unified",
+      font: { family: FONT_SANS, color: "#17202A", size: mobile ? 10.5 : 12 },
+      margin: mobile ? { l: 48, r: 8, t: 12, b: 32 } : { l: 68, r: 18, t: 16, b: 38 },
+      hovermode: mobile ? "closest" : "x unified",
+      dragmode: mobile ? false : "zoom",
       showlegend: false,
       xaxis: {
         anchor: "y2",
         showgrid: true,
         gridcolor: "#EEF2F6",
-        tickfont: { family: FONT_MONO, size: 11 },
+        fixedrange: mobile,
+        tickfont: { family: FONT_MONO, size: mobile ? 9.5 : 11 },
       },
       yaxis: {
         domain: [0.54, 1.0],
         anchor: "x",
-        title: { text: `Level (${meta.units})`, font: { size: 11.5, color: "#434E5E" } },
+        title: { text: mobile ? "Level" : `Level (${meta.units})`, font: { size: mobile ? 10.5 : 11.5, color: "#434E5E" } },
         showgrid: true,
         gridcolor: "#EEF2F6",
-        tickfont: { family: FONT_MONO, size: 10.5 },
+        fixedrange: mobile,
+        tickfont: { family: FONT_MONO, size: mobile ? 9 : 10.5 },
       },
       yaxis2: {
         domain: [0.0, 0.42],
         anchor: "x",
-        title: { text: meta.transformLabel, font: { size: 11.5, color: "#434E5E" } },
+        title: { text: mobile ? meta.transformFormula : meta.transformLabel, font: { size: mobile ? 10.5 : 11.5, color: "#434E5E" } },
         showgrid: true,
         gridcolor: "#EEF2F6",
         zeroline: true,
         zerolinecolor: "#94A3B8",
-        tickfont: { family: FONT_MONO, size: 10.5 },
+        fixedrange: mobile,
+        tickfont: { family: FONT_MONO, size: mobile ? 9 : 10.5 },
       },
       shapes: getRegimeShapes("paper"),
     };
 
-    Plotly.react("plot-series-detail", [traceLevel, traceTrans], layout, PLOTLY_CONFIG);
+    Plotly.react("plot-series-detail", [traceLevel, traceTrans], layout, getPlotlyConfig());
 
     const captionEl = document.getElementById("fig2-caption");
     if (captionEl) {
@@ -372,6 +405,7 @@
   };
 
   function renderCorrelation() {
+    const mobile = isMobileViewport();
     const labels = DATA.correlations.labels;
     const z = DATA.correlations[state.fig3Mode];
     const annotations = [];
@@ -387,7 +421,7 @@
           showarrow: false,
           font: {
             family: FONT_MONO,
-            size: 12,
+            size: mobile ? 9 : 12,
             color: Math.abs(val) > 0.55 ? "#FFFFFF" : "#17202A",
           },
         });
@@ -408,6 +442,7 @@
         [0.75, "#6B9AC4"],
         [1.0, "#102A43"],
       ],
+      showscale: !mobile,
       colorbar: {
         title: { text: "r", font: { family: FONT_MONO, size: 11 } },
         tickfont: { family: FONT_MONO, size: 10.5 },
@@ -420,13 +455,23 @@
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "#FFFFFF",
       font: { family: FONT_SANS, color: "#17202A" },
-      margin: { l: 84, r: 24, t: 16, b: 52 },
-      xaxis: { side: "bottom", tickfont: { family: FONT_MONO, size: 11.5 } },
-      yaxis: { autorange: "reversed", tickfont: { family: FONT_MONO, size: 11.5 } },
+      margin: mobile ? { l: 62, r: 8, t: 10, b: 56 } : { l: 84, r: 24, t: 16, b: 52 },
+      dragmode: false,
+      xaxis: {
+        side: "bottom",
+        fixedrange: true,
+        tickangle: mobile ? -35 : 0,
+        tickfont: { family: FONT_MONO, size: mobile ? 9.5 : 11.5 },
+      },
+      yaxis: {
+        autorange: "reversed",
+        fixedrange: true,
+        tickfont: { family: FONT_MONO, size: mobile ? 9.5 : 11.5 },
+      },
       annotations,
     };
 
-    Plotly.react("plot-correlation", [trace], layout, PLOTLY_CONFIG);
+    Plotly.react("plot-correlation", [trace], layout, getPlotlyConfig());
     const cap = document.getElementById("fig3-caption");
     if (cap) cap.innerHTML = CORR_CAPTIONS[state.fig3Mode];
   }
@@ -516,8 +561,71 @@
     }
   }
 
+  function bindMobileNav() {
+    const toggle = document.getElementById("mobile-nav-toggle");
+    const drawer = document.getElementById("mobile-drawer");
+    if (!toggle || !drawer) return;
+
+    function closeDrawer() {
+      drawer.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    toggle.addEventListener("click", () => {
+      const isOpen = drawer.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    drawer.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", closeDrawer);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeDrawer();
+    });
+  }
+
+  function injectMobileTableHints() {
+    document.querySelectorAll(".table-wrap").forEach((wrap) => {
+      if (wrap.querySelector(".mobile-swipe-hint")) return;
+      const title = wrap.querySelector(".table-title");
+      const hint = document.createElement("div");
+      hint.className = "mobile-swipe-hint";
+      hint.style.position = "sticky";
+      hint.style.left = "0";
+      hint.textContent = "Swipe table horizontally →";
+      if (title) {
+        title.insertAdjacentElement("afterend", hint);
+      } else {
+        wrap.prepend(hint);
+      }
+    });
+  }
+
+  function bindResponsivePlots() {
+    let resizeTimer = null;
+    let lastMobile = isMobileViewport();
+    function onResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const nowMobile = isMobileViewport();
+        if (nowMobile !== lastMobile) {
+          lastMobile = nowMobile;
+          renderComovement();
+          renderSeriesDetail();
+          renderCorrelation();
+        }
+      }, 180);
+    }
+    window.addEventListener("resize", onResize, { passive: true });
+    window.addEventListener("orientationchange", onResize, { passive: true });
+  }
+
   function init() {
     populateTable1();
+    injectMobileTableHints();
+    bindMobileNav();
+    bindResponsivePlots();
 
     bindControlGroup("fig1-scale-controls", (btn) => {
       state.fig1Scale = btn.dataset.scale;
