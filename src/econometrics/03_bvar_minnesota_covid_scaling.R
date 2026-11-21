@@ -352,92 +352,104 @@ sim_lp_lvl    <- sample_bvar_density(fit_bvar_lp_lvl,    Y_tr_lvl,  Y_te_lvl,  M
 cat(sprintf("Completed all 1,500 posterior predictive draws in %.1f seconds.\n\n",
             difftime(Sys.time(), t0, units = "secs")))
 
-# Classical COVID-Controlled VAR(2) benchmark (from Step 2 CSV for exact consistency)
+# Classical COVID-Controlled VAR(2) & Formal VECM(r=2) benchmarks (from Step 2 CSVs)
 traj_var <- read.csv("outputs/econometrics/table_counterfactual_trajectories.csv", stringsAsFactors = FALSE)
 hac_var  <- read.csv("outputs/econometrics/table_hac_break_tests.csv", stringsAsFactors = FALSE)
-var_cnd_hwi <- traj_var$Value[traj_var$Type == "Policy-Conditioned VAR(2)" & grepl("HWI", traj_var$SeriesLabel)]
-var_cnd_pay <- traj_var$Value[traj_var$Type == "Policy-Conditioned VAR(2)" & grepl("PAYEMS", traj_var$SeriesLabel)]
+var_cnd_hwi  <- traj_var$Value[traj_var$Type == "Policy-Cond. VAR(2)"    & grepl("HWI",    traj_var$SeriesLabel)]
+var_cnd_pay  <- traj_var$Value[traj_var$Type == "Policy-Cond. VAR(2)"    & grepl("PAYEMS", traj_var$SeriesLabel)]
+vecm_cnd_hwi <- traj_var$Value[traj_var$Type == "Policy-Cond. VECM(r=2)" & grepl("HWI",    traj_var$SeriesLabel)]
+vecm_cnd_pay <- traj_var$Value[traj_var$Type == "Policy-Cond. VECM(r=2)" & grepl("PAYEMS", traj_var$SeriesLabel)]
 
 # ------------------------------------------------------------------------------
-# 5. Export Exact Model Comparison Ledger (Zero Hardcoded Values!)
+# 5. Export Exact 5-Model Comparison Ledger (Zero Hardcoded Values!)
 # ------------------------------------------------------------------------------
 pct_gap <- function(real_end, cnd_end) 100 * (real_end / cnd_end - 1)
 
-# Newey-West HAC CIs for Classical VAR(2)
-var_hwi_mean <- hac_var$Mean_Error[2]; var_hwi_se <- hac_var$HAC_SE[2]
-var_pay_mean <- hac_var$Mean_Error[4]; var_pay_se <- hac_var$HAC_SE[4]
+var_hwi_mean  <- hac_var$Mean_Error[2]; var_hwi_se  <- hac_var$HAC_SE[2]
+vecm_hwi_mean <- hac_var$Mean_Error[3]; vecm_hwi_se <- hac_var$HAC_SE[3]
+var_pay_mean  <- hac_var$Mean_Error[5]; var_pay_se  <- hac_var$HAC_SE[5]
+vecm_pay_mean <- hac_var$Mean_Error[6]; vecm_pay_se <- hac_var$HAC_SE[6]
 
 comp_table <- data.frame(
   Model = c(
     "COVID-Controlled VAR(2) (OLS)",
+    "Cointegrated VECM(r=2) (Levels)",
     "Unscaled Minnesota BVAR(2) (Diff)",
     "Lenza-Primiceri BVAR(2) (Diff)",
     "Lenza-Primiceri BVAR(3) (Levels)"
   ),
   HWI_Mean_Err = c(
     var_hwi_mean,
+    vecm_hwi_mean,
     mean(sim_unsc_diff$dhwi_mean_err),
     mean(sim_lp_diff$dhwi_mean_err),
     mean(sim_lp_lvl$dhwi_mean_err)
   ),
   HWI_CI_Low = c(
-    var_hwi_mean - 1.96 * var_hwi_se,
+    var_hwi_mean  - 1.96 * var_hwi_se,
+    vecm_hwi_mean - 1.96 * vecm_hwi_se,
     quantile(sim_unsc_diff$dhwi_mean_err, 0.025),
     quantile(sim_lp_diff$dhwi_mean_err,   0.025),
     quantile(sim_lp_lvl$dhwi_mean_err,    0.025)
   ),
   HWI_CI_High = c(
-    var_hwi_mean + 1.96 * var_hwi_se,
+    var_hwi_mean  + 1.96 * var_hwi_se,
+    vecm_hwi_mean + 1.96 * vecm_hwi_se,
     quantile(sim_unsc_diff$dhwi_mean_err, 0.975),
     quantile(sim_lp_diff$dhwi_mean_err,   0.975),
     quantile(sim_lp_lvl$dhwi_mean_err,    0.975)
   ),
   HWI_End_PctGap = c(
     pct_gap(hwi_real[H], var_cnd_hwi[H]),
+    pct_gap(hwi_real[H], vecm_cnd_hwi[H]),
     pct_gap(hwi_real[H], median(sim_unsc_diff$hwi_lvl_cnd[, H])),
     pct_gap(hwi_real[H], median(sim_lp_diff$hwi_lvl_cnd[, H])),
     pct_gap(hwi_real[H], median(sim_lp_lvl$hwi_lvl_cnd[, H]))
   ),
   HWI_Prob_Neg = c(
-    pnorm(0, mean = var_hwi_mean, sd = var_hwi_se, lower.tail = FALSE), # 1 - Phi(0) for negative mean -> P(e<0)
+    pnorm(0, mean = var_hwi_mean,  sd = var_hwi_se,  lower.tail = TRUE),
+    pnorm(0, mean = vecm_hwi_mean, sd = vecm_hwi_se, lower.tail = TRUE),
     mean(sim_unsc_diff$dhwi_mean_err < 0),
     mean(sim_lp_diff$dhwi_mean_err < 0),
     mean(sim_lp_lvl$dhwi_mean_err < 0)
   ),
   PAY_Mean_Err = c(
     var_pay_mean,
+    vecm_pay_mean,
     mean(sim_unsc_diff$dpay_mean_err),
     mean(sim_lp_diff$dpay_mean_err),
     mean(sim_lp_lvl$dpay_mean_err)
   ),
   PAY_CI_Low = c(
-    var_pay_mean - 1.96 * var_pay_se,
+    var_pay_mean  - 1.96 * var_pay_se,
+    vecm_pay_mean - 1.96 * vecm_pay_se,
     quantile(sim_unsc_diff$dpay_mean_err, 0.025),
     quantile(sim_lp_diff$dpay_mean_err,   0.025),
     quantile(sim_lp_lvl$dpay_mean_err,    0.025)
   ),
   PAY_CI_High = c(
-    var_pay_mean + 1.96 * var_pay_se,
+    var_pay_mean  + 1.96 * var_pay_se,
+    vecm_pay_mean + 1.96 * vecm_pay_se,
     quantile(sim_unsc_diff$dpay_mean_err, 0.975),
     quantile(sim_lp_diff$dpay_mean_err,   0.975),
     quantile(sim_lp_lvl$dpay_mean_err,    0.975)
   ),
   PAY_End_PctGap = c(
     pct_gap(pay_real[H], var_cnd_pay[H]),
+    pct_gap(pay_real[H], vecm_cnd_pay[H]),
     pct_gap(pay_real[H], median(sim_unsc_diff$pay_lvl_cnd[, H])),
     pct_gap(pay_real[H], median(sim_lp_diff$pay_lvl_cnd[, H])),
     pct_gap(pay_real[H], median(sim_lp_lvl$pay_lvl_cnd[, H]))
   ),
   PAY_Prob_Neg = c(
-    pnorm(0, mean = var_pay_mean, sd = var_pay_se, lower.tail = TRUE),
+    pnorm(0, mean = var_pay_mean,  sd = var_pay_se,  lower.tail = TRUE),
+    pnorm(0, mean = vecm_pay_mean, sd = vecm_pay_se, lower.tail = TRUE),
     mean(sim_unsc_diff$dpay_mean_err < 0),
     mean(sim_lp_diff$dpay_mean_err < 0),
     mean(sim_lp_lvl$dpay_mean_err < 0)
   ),
   stringsAsFactors = FALSE
 )
-# Fix P(e < 0) for VAR HWI using exact normal CDF: P(Z < 0) = pnorm(0, mean, sd)
-comp_table$HWI_Prob_Neg[1] <- pnorm(0, mean = var_hwi_mean, sd = var_hwi_se, lower.tail = TRUE)
 
 print(comp_table, row.names = FALSE)
 write.csv(comp_table, "outputs/econometrics/table_bvar_comparison.csv", row.names = FALSE)
@@ -459,31 +471,33 @@ write.csv(lp_hyper, "outputs/econometrics/table_bvar_hyperparameters.csv", row.n
 tex_tab5 <- sprintf(
 "\\begin{table}[t]
 \\centering
-\\caption{Classical VAR vs. Lenza--Primiceri BVAR Conditional Metrics}
+\\caption{Classical VAR/VECM vs. Lenza--Primiceri BVAR Conditional Metrics}
 \\label{tab:bvar_comparison}
 \\begin{minipage}{\\columnwidth}
 \\centering
-\\fontsize{6.6pt}{8.0pt}\\selectfont
-\\setlength{\\tabcolsep}{1.9pt}
+\\fontsize{6.4pt}{7.8pt}\\selectfont
+\\setlength{\\tabcolsep}{1.6pt}
 \\begin{tabular}{lcccc}
 \\toprule
 \\textbf{Model Specification} & $\\bar{e}$ & \\textbf{95\\%% Interval} & \\textbf{2026 Gap} & $P(\\bar{e}<0)$ \\\\
 \\midrule
-\\multicolumn{5}{l}{\\textit{Job Openings ($\\Delta\\text{HWI}$, thsd/mo; 2026M8 Realized = 7,079k)}} \\\\
-COVID-Controlled VAR(2) & $%.1f$ & $[%.1f, %.1f]$ & $%.1f\\%%$ & $%.3f$ \\\\
-Unscaled BVAR(2) [Diff] & $%.1f$ & $[%.1f, %.1f]$ & $%.1f\\%%$ & $%.3f$ \\\\
-LP-BVAR(2) [Diff]       & $%.1f$ & $[%.1f, %.1f]$ & $%.1f\\%%$ & $%.3f$ \\\\
-\\textbf{LP-BVAR(3) [Levels]} & $\\mathbf{%.1f}$ & $\\mathbf{[%.1f, %.1f]}$ & $\\mathbf{%.1f\\%%}$ & $\\mathbf{%.3f}$ \\\\
+\\multicolumn{5}{l}{\\textit{JOLTS Job Openings ($\\Delta\\text{HWI}$, thsd/mo; 2026M8 Realized = 7,079k)}} \\\\
+COVID-Controlled VAR(2) & $%.1f$ & $[%.1f, %.1f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+Cointegrated VECM($r=2$) & $%.1f$ & $[%.1f, %+.1f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+Unscaled BVAR(2) [Diff] & $%.1f$ & $[%.1f, %.1f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+LP-BVAR(2) [Diff]       & $%.1f$ & $[%.1f, %.1f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+\\textbf{LP-BVAR(3) [Levels]} & $\\mathbf{%.1f}$ & $\\mathbf{[%.1f, %.1f]}$ & $\\mathbf{%+.1f\\%%}$ & $\\mathbf{%.3f}$ \\\\
 \\midrule
 \\multicolumn{5}{l}{\\textit{Total Payrolls ($\\Delta\\log\\text{PAYEMS}$, \\%%/mo; 2026M8 Realized = 159,015k)}} \\\\
-COVID-Controlled VAR(2) & $%+.3f$ & $[%.3f, %+.3f]$ & $%.1f\\%%$ & $%.3f$ \\\\
-Unscaled BVAR(2) [Diff] & $%+.3f$ & $[%.3f, %+.3f]$ & $%.1f\\%%$ & $%.3f$ \\\\
-LP-BVAR(2) [Diff]       & $%+.3f$ & $[%.3f, %+.3f]$ & $%.1f\\%%$ & $%.3f$ \\\\
-\\textbf{LP-BVAR(3) [Levels]} & $\\mathbf{%+.3f}$ & $\\mathbf{[%.3f, %+.3f]}$ & $\\mathbf{%.1f\\%%}$ & $\\mathbf{%.3f}$ \\\\
+COVID-Controlled VAR(2) & $%+.3f$ & $[%.3f, %+.3f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+Cointegrated VECM($r=2$) & $%+.3f$ & $[%.3f, %+.3f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+Unscaled BVAR(2) [Diff] & $%+.3f$ & $[%.3f, %+.3f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+LP-BVAR(2) [Diff]       & $%+.3f$ & $[%.3f, %+.3f]$ & $%+.1f\\%%$ & $%.3f$ \\\\
+\\textbf{LP-BVAR(3) [Levels]} & $\\mathbf{%+.3f}$ & $\\mathbf{[%.3f, %+.3f]}$ & $\\mathbf{%+.1f\\%%}$ & $\\mathbf{%.3f}$ \\\\
 \\bottomrule
 \\end{tabular}
 \\vskip 2pt
-{\\scriptsize \\textit{Notes}: Out-of-sample horizon $H=46$ (2022M11--2026M8) conditioned on realized $\\mathcal{C}=\\{\\text{FEDFUNDS},\\text{M2SL},\\text{BAA10YM}\\}$. Bayesian 95\\%% predictive intervals combine NIW parameter draws and exact Waggoner--Zha (1999) conditional shock draws ($M=500$). LP-BVAR hyperparameters are maximized via exact log marginal likelihood (Log Bayes Factor $= +%.1f$ for COVID scaling). 2026 Gap reports relative level deviation at 2026M8.\\par}
+{\\scriptsize \\textit{Notes}: Horizon $H=46$ (2022M11--2026M8) conditioned on realized $\\mathcal{C}=\\{\\text{FEDFUNDS},\\text{M2SL},\\text{BAA10YM}\\}$. Frequentist VAR(2)/VECM($r=2$) use 2020:03--2020:12 pulse dummies; Bayesian LP-BVAR uses Lenza--Primiceri (2022) exact marginal-likelihood volatility scaling (Log Bayes Factor $= +%.1f$) with $M=500$ full Waggoner--Zha predictive draws.\\par}
 \\end{minipage}
 \\end{table}
 ",
@@ -491,10 +505,12 @@ comp_table$HWI_Mean_Err[1], comp_table$HWI_CI_Low[1], comp_table$HWI_CI_High[1],
 comp_table$HWI_Mean_Err[2], comp_table$HWI_CI_Low[2], comp_table$HWI_CI_High[2], comp_table$HWI_End_PctGap[2], comp_table$HWI_Prob_Neg[2],
 comp_table$HWI_Mean_Err[3], comp_table$HWI_CI_Low[3], comp_table$HWI_CI_High[3], comp_table$HWI_End_PctGap[3], comp_table$HWI_Prob_Neg[3],
 comp_table$HWI_Mean_Err[4], comp_table$HWI_CI_Low[4], comp_table$HWI_CI_High[4], comp_table$HWI_End_PctGap[4], comp_table$HWI_Prob_Neg[4],
+comp_table$HWI_Mean_Err[5], comp_table$HWI_CI_Low[5], comp_table$HWI_CI_High[5], comp_table$HWI_End_PctGap[5], comp_table$HWI_Prob_Neg[5],
 comp_table$PAY_Mean_Err[1], comp_table$PAY_CI_Low[1], comp_table$PAY_CI_High[1], comp_table$PAY_End_PctGap[1], comp_table$PAY_Prob_Neg[1],
 comp_table$PAY_Mean_Err[2], comp_table$PAY_CI_Low[2], comp_table$PAY_CI_High[2], comp_table$PAY_End_PctGap[2], comp_table$PAY_Prob_Neg[2],
 comp_table$PAY_Mean_Err[3], comp_table$PAY_CI_Low[3], comp_table$PAY_CI_High[3], comp_table$PAY_End_PctGap[3], comp_table$PAY_Prob_Neg[3],
 comp_table$PAY_Mean_Err[4], comp_table$PAY_CI_Low[4], comp_table$PAY_CI_High[4], comp_table$PAY_End_PctGap[4], comp_table$PAY_Prob_Neg[4],
+comp_table$PAY_Mean_Err[5], comp_table$PAY_CI_Low[5], comp_table$PAY_CI_High[5], comp_table$PAY_End_PctGap[5], comp_table$PAY_Prob_Neg[5],
 fit_bvar_lp_diff$lml - fit_bvar_unsc_diff$lml
 )
 cat(tex_tab5, file = "outputs/econometrics/table5_bvar_comparison.tex")
@@ -575,39 +591,43 @@ comp_lvl_df <- rbind(
   data.frame(Date = plot_dates, Value = hwi_real, Model = "Realized Post-2022", Panel = "(a) Job Openings (HWI, thousands)"),
   data.frame(Date = plot_dates, Value = apply(sim_lp_lvl$hwi_lvl_cnd, 2, median), Model = "LP-BVAR(3) Levels", Panel = "(a) Job Openings (HWI, thousands)"),
   data.frame(Date = plot_dates, Value = apply(sim_lp_diff$hwi_lvl_cnd, 2, median), Model = "LP-BVAR(2) Diff", Panel = "(a) Job Openings (HWI, thousands)"),
-  data.frame(Date = plot_dates, Value = var_cnd_hwi, Model = "COVID-Controlled VAR(2)", Panel = "(a) Job Openings (HWI, thousands)"),
+  data.frame(Date = plot_dates, Value = vecm_cnd_hwi, Model = "VECM(r=2) Levels", Panel = "(a) Job Openings (HWI, thousands)"),
+  data.frame(Date = plot_dates, Value = var_cnd_hwi, Model = "COVID-VAR(2)", Panel = "(a) Job Openings (HWI, thousands)"),
   data.frame(Date = plot_dates, Value = pay_real, Model = "Realized Post-2022", Panel = "(b) Payroll Employment (PAYEMS, thousands)"),
   data.frame(Date = plot_dates, Value = apply(sim_lp_lvl$pay_lvl_cnd, 2, median), Model = "LP-BVAR(3) Levels", Panel = "(b) Payroll Employment (PAYEMS, thousands)"),
   data.frame(Date = plot_dates, Value = apply(sim_lp_diff$pay_lvl_cnd, 2, median), Model = "LP-BVAR(2) Diff", Panel = "(b) Payroll Employment (PAYEMS, thousands)"),
-  data.frame(Date = plot_dates, Value = var_cnd_pay, Model = "COVID-Controlled VAR(2)", Panel = "(b) Payroll Employment (PAYEMS, thousands)")
+  data.frame(Date = plot_dates, Value = vecm_cnd_pay, Model = "VECM(r=2) Levels", Panel = "(b) Payroll Employment (PAYEMS, thousands)"),
+  data.frame(Date = plot_dates, Value = var_cnd_pay, Model = "COVID-VAR(2)", Panel = "(b) Payroll Employment (PAYEMS, thousands)")
 )
 comp_lvl_df$Model <- factor(comp_lvl_df$Model, levels = c(
-  "Realized Post-2022", "LP-BVAR(3) Levels", "LP-BVAR(2) Diff", "COVID-Controlled VAR(2)"
+  "Realized Post-2022", "LP-BVAR(3) Levels", "LP-BVAR(2) Diff", "VECM(r=2) Levels", "COVID-VAR(2)"
 ))
 
 build_fig6 <- function(is_web = FALSE) {
   th <- if (is_web) theme_web_wide() else theme_ieee_print()
-  lw <- if (is_web) 0.90 else 0.68
+  lw <- if (is_web) 0.88 else 0.65
   ggplot(comp_lvl_df, aes(x = Date, y = Value, color = Model, linetype = Model)) +
     geom_line(linewidth = lw) +
     facet_wrap(~Panel, scales = "free_y", ncol = if (is_web) 2 else 1) +
     scale_color_manual(name = NULL, values = c(
-      "Realized Post-2022"      = PAL$red,
-      "LP-BVAR(3) Levels"       = PAL$navy,
-      "LP-BVAR(2) Diff"         = PAL$amber,
-      "COVID-Controlled VAR(2)" = PAL$gray
+      "Realized Post-2022" = PAL$red,
+      "LP-BVAR(3) Levels"  = PAL$navy,
+      "LP-BVAR(2) Diff"    = PAL$amber,
+      "VECM(r=2) Levels"   = PAL$teal,
+      "COVID-VAR(2)"       = PAL$gray
     )) +
     scale_linetype_manual(name = NULL, values = c(
-      "Realized Post-2022"      = "solid",
-      "LP-BVAR(3) Levels"       = "solid",
-      "LP-BVAR(2) Diff"         = "dashed",
-      "COVID-Controlled VAR(2)" = "dotdash"
+      "Realized Post-2022" = "solid",
+      "LP-BVAR(3) Levels"  = "solid",
+      "LP-BVAR(2) Diff"    = "dashed",
+      "VECM(r=2) Levels"   = "longdash",
+      "COVID-VAR(2)"       = "dotdash"
     )) +
     scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
     scale_y_continuous(labels = comma) +
     guides(
-      color    = guide_legend(nrow = if (is_web) 1 else 2, byrow = TRUE),
-      linetype = guide_legend(nrow = if (is_web) 1 else 2, byrow = TRUE)
+      color    = guide_legend(nrow = if (is_web) 1 else 3, byrow = TRUE),
+      linetype = guide_legend(nrow = if (is_web) 1 else 3, byrow = TRUE)
     ) +
     labs(x = NULL, y = "Levels (Thousands)") +
     th

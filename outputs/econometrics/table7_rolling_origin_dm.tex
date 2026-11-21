@@ -1,0 +1,33 @@
+\begin{table}[t]
+\centering
+\caption{Rolling-Origin Evaluation ($h=1\text{--}12$, $N=73$ Origins): MASE, CRPS \& DM Tests}
+\label{tab:rolling_eval}
+\begin{minipage}{\columnwidth}
+\centering
+\fontsize{6.3pt}{7.7pt}\selectfont
+\setlength{\tabcolsep}{1.6pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{MASE}$_{1}$ & \textbf{MASE}$_{12}$ & \textbf{MASE}$_{\text{1-12}}$ & \textbf{CRPS}$_{\text{1-12}}$ & \textbf{DM}$_{\text{CRPS}}$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Panel A: JOLTS Job Openings (\texttt{HWI}, Thousands of Openings)}} \\
+RW-Drift Benchmark    & $1.31$ & $5.09$ & $3.18$ & $405.0$ & $+0.00$ \\
+COVID-VAR(2) [Ref.]   & $1.28$ & $5.06$ & $3.13$ & $404.8$ & -- \\
+\textbf{Cointegrated VECM($r=2$)} & $\mathbf{1.23}$ & $\mathbf{4.42}$ & $\mathbf{2.68}$ & $\mathbf{335.8}$ & $\mathbf{-1.17}$ \\
+Unscaled BVAR(2)      & $1.24$ & $4.91$ & $3.03$ & $387.9$ & $-1.93^{*}$ \\
+LP-BVAR(2) [Diff]     & $1.24$ & $4.88$ & $3.03$ & $427.3$ & $+0.52$ \\
+LP-BVAR(3) [Levels]   & $1.25$ & $6.06$ & $3.53$ & $469.4$ & $+0.83$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Panel B: Total Nonfarm Payrolls (\texttt{PAYEMS}, Thousands of Persons)}} \\
+RW-Drift Benchmark    & $0.52$ & $5.34$ & $2.82$ & $420.6$ & $-1.15$ \\
+COVID-VAR(2) [Ref.]   & $0.50$ & $6.88$ & $3.47$ & $469.3$ & -- \\
+\textbf{Cointegrated VECM($r=2$)} & $\mathbf{0.39}$ & $\mathbf{2.82}$ & $\mathbf{1.55}$ & $\mathbf{214.7}$ & $\mathbf{-2.54^{**}}$ \\
+Unscaled BVAR(2)      & $2.03$ & $3.48$ & $2.58$ & $539.5$ & $+0.92$ \\
+LP-BVAR(2) [Diff]     & $0.51$ & $5.15$ & $2.72$ & $406.7$ & $-1.86^{*}$ \\
+LP-BVAR(3) [Levels]   & $0.44$ & $5.01$ & $2.50$ & $375.0$ & $-1.26$ \\
+\bottomrule
+\end{tabular}
+\vskip 2pt
+{\scriptsize \textit{Notes}: Expanding-window rolling origins spanning 2016M1--2019M2 (38 pre-COVID origins) and 2022M10--2025M8 (35 post-2022 origins); zero post-2022 hyperparameter tuning. Lower MASE and CRPS indicate superior accuracy. DM$_{\text{CRPS}}$ reports the Harvey--Leybourne--Newbold Diebold--Mariano statistic vs.\ COVID-VAR(2) (negative favors candidate; $^{***}p<0.01$, $^{**}p<0.05$, $^{*}p<0.10$).\par}
+\end{minipage}
+\end{table}

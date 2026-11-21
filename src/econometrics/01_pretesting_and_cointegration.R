@@ -342,12 +342,10 @@ Y_lvl_5 <- train[, c("FEDFUNDS", "log_M2SL", "log_INDPRO", "log_HWI", "log_PAYEM
 Y_lvl_6 <- train[, c("FEDFUNDS", "log_M2SL", "BAA10YM", "log_INDPRO", "log_HWI", "log_PAYEMS")]
 Y_lvl_5_pre <- precovid[, c("FEDFUNDS", "log_M2SL", "log_INDPRO", "log_HWI", "log_PAYEMS")]
 
-# COVID pulse dummies (2020-03, 2020-04, 2020-05)
-covid_dum <- cbind(
-  D2020M3 = as.numeric(train$date == as.Date("2020-03-01")),
-  D2020M4 = as.numeric(train$date == as.Date("2020-04-01")),
-  D2020M5 = as.numeric(train$date == as.Date("2020-05-01"))
-)
+# Full 2020:03-2020:12 COVID pulse dummies (10 months, per Prof. Ceylan feedback)
+covid_months <- seq(as.Date("2020-03-01"), as.Date("2020-12-01"), by = "month")
+covid_dum <- sapply(covid_months, function(d) as.numeric(train$date == d))
+colnames(covid_dum) <- format(covid_months, "D%YM%m")
 
 cat("\n======================================================================\n")
 cat("4A. LEVEL-VAR LAG SELECTION FOR JOHANSEN TEST (p_max = 12)\n")
@@ -389,10 +387,10 @@ K_cov <- max(2, as.integer(sel_lvl5_cov$selection["SC(n)"]))
 K_pre <- max(2, as.integer(sel_lvl5_pre$selection["SC(n)"]))
 
 joh_results <- rbind(
-  summarize_johansen(Y_lvl_5,     K_raw, "Core 5 I(1) Raw (2010-2022)", dum = NULL),
-  summarize_johansen(Y_lvl_5,     K_cov, "Core 5 I(1) + COVID Dummies (2010-2022)", dum = covid_dum),
-  summarize_johansen(Y_lvl_5_pre, K_pre, "Core 5 I(1) Pre-COVID (2010-2020M2)", dum = NULL),
-  summarize_johansen(Y_lvl_6,     max(2, K_cov), "All 6 Vars + COVID Dummies (2010-2022)", dum = covid_dum)
+  summarize_johansen(Y_lvl_5,     K_raw, "Core 5 I(1) Raw (2010-2022)", dum = NULL, ecdet = "const"),
+  summarize_johansen(Y_lvl_5,     K_cov, "Core 5 I(1) + COVID Dummies 2020M3-12 (2010-2022)", dum = covid_dum, ecdet = "const"),
+  summarize_johansen(Y_lvl_5_pre, K_pre, "Core 5 I(1) Pre-COVID (2010-2020M2)", dum = NULL, ecdet = "const"),
+  summarize_johansen(Y_lvl_6,     3,     "All 6 Vars + COVID Dummies 2020M3-12 [Case 3 Drift]", dum = covid_dum, ecdet = "none")
 )
 
 cat("\n======================================================================\n")

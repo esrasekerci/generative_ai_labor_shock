@@ -60,11 +60,11 @@ window.FRED_MACRO_DATA = {
     },
     {
       "id": "HWI",
-      "label": "Help-Wanted Index (Job Openings)",
+      "label": "JOLTS Total Nonfarm Job Openings (HWI / JTSJOL)",
       "shortLabel": "Job Openings (HWI)",
       "role": "Labor Demand / Vacancies (Target)",
       "block": "Labor Market Target",
-      "units": "Index / Thousands",
+      "units": "Thousands of Openings",
       "tcode": 2,
       "transformFormula": "\u0394 x\u209c",
       "transformLabel": "Monthly first difference",

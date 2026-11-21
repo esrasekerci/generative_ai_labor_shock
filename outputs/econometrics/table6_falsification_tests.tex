@@ -1,0 +1,33 @@
+\begin{table}[t]
+\centering
+\caption{Falsification Tests: Pre-2022 Pseudo-Breaks \& Sectoral Placebos}
+\label{tab:falsification}
+\begin{minipage}{\columnwidth}
+\centering
+\fontsize{6.4pt}{7.8pt}\selectfont
+\setlength{\tabcolsep}{1.4pt}
+\begin{tabular}{lcccc}
+\toprule
+\multicolumn{5}{l}{\textit{Panel A: Pre-2022 Pseudo-Break Placebo Origins (24-Mo Clean Horizons)}} \\
+\textbf{Origin / Window} & \textbf{HWI Gap} & $t_{\text{HAC}}$ & \textbf{PAYEMS Gap} & \textbf{Exceedance} \\
+\midrule
+Pre-AI Mean (13 origins, 2015--18) & $+1.7\%$ & -- & $-0.1\%$ & -- \\
+Pre-AI Most Negative (2016M12)          & $-26.2\%$ & $-1.32$ & $+0.4\%$ & -- \\
+\textbf{Post-2022 Actual (24-mo)} & $\mathbf{-30.0\%}$ & $\mathbf{-2.79}$ & $\mathbf{-0.8\%}$ & $\mathbf{0/13\;(0\%)}$ \\
+\textbf{Post-2022 Actual (46-mo)} & $\mathbf{-44.2\%}$ & $\mathbf{-3.10}$ & $\mathbf{-3.8\%}$ & $\mathbf{0/13\;(0\%)}$ \\
+\midrule
+\multicolumn{5}{l}{\textit{Panel B: Sectoral AI-Exposure Placebo (2022M11--2026M8, $H=46$)}} \\
+\textbf{Labor Series (FRED-MD)} & \textbf{Exposure} & \textbf{Real. $\Delta$} & \textbf{Cond. Gap} & $t_{\text{HAC}}$ \\
+\midrule
+Government (\texttt{USGOVT})    & Low (Inst.)   & $+4.7\%$ & $-0.2\%$ & $-0.09$ \\
+Construction (\texttt{USCONS})  & Low (Phys.)   & $+6.4\%$ & $-13.3\%$ & $-8.99$ \\
+Manufacturing (\texttt{MANEMP}) & Low/Med       & $-1.9\%$ & $-5.2\%$ & $-5.38$ \\
+Total Payrolls (\texttt{PAYEMS})& Aggregate     & $+3.3\%$ & $-3.8\%$ & $-4.81$ \\
+Finance (\texttt{USFIRE})       & High (Cogn.)  & $-0.4\%$ & $-9.0\%$ & $-10.15$ \\
+\textbf{Job Openings (\texttt{HWI})} & \textbf{Hiring Margin} & $\mathbf{-32.2\%}$ & $\mathbf{-44.2\%}$ & $\mathbf{-3.10}$ \\
+\bottomrule
+\end{tabular}
+\vskip 2pt
+{\scriptsize \textit{Notes}: All models use the exact marginal-likelihood Levels LP-BVAR(3) conditioned on realized $\{\text{FEDFUNDS},\text{M2SL},\text{BAA10YM}\}$. Panel~A evaluates 13 quarterly pre-AI origins strictly ending $\le 2020\text{M}2$. Panel~B contrasts low-AI physical sectors against cognitive finance and JOLTS openings to bound omitted macro confounders.\par}
+\end{minipage}
+\end{table}

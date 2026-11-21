@@ -1,0 +1,7 @@
+"Series","AI_Exposure","Realized_Chg","Cond_Gap_Pct","Mean_Err_PctMo","HAC_t","HAC_p"
+"Government (USGOVT)","Low AI (Institutional)",4.7,-0.2,-0.004,-0.09,0.925
+"Construction (USCONS)","Low AI (Physical)",6.4,-13.3,-0.309,-8.99,1.3e-11
+"Manufacturing (MANEMP)","Low/Med AI (Physical)",-1.9,-5.2,-0.117,-5.38,2.61e-06
+"Total Payrolls (PAYEMS)","Aggregate Economy",3.3,-3.8,-0.083,-4.81,1.72e-05
+"Finance (USFIRE)","High AI (Cognitive)",-0.4,-9,-0.205,-10.15,3.31e-13
+"Job Openings (HWI)","Hiring Margin (JOLTS)",-32.2,-44.2,-1.267,-3.1,0.00334

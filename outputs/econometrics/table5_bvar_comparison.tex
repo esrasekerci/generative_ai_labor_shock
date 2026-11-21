@@ -1,29 +1,31 @@
 \begin{table}[t]
 \centering
-\caption{Classical VAR vs. Lenza--Primiceri BVAR Conditional Metrics}
+\caption{Classical VAR/VECM vs. Lenza--Primiceri BVAR Conditional Metrics}
 \label{tab:bvar_comparison}
 \begin{minipage}{\columnwidth}
 \centering
-\fontsize{6.6pt}{8.0pt}\selectfont
-\setlength{\tabcolsep}{1.9pt}
+\fontsize{6.4pt}{7.8pt}\selectfont
+\setlength{\tabcolsep}{1.6pt}
 \begin{tabular}{lcccc}
 \toprule
 \textbf{Model Specification} & $\bar{e}$ & \textbf{95\% Interval} & \textbf{2026 Gap} & $P(\bar{e}<0)$ \\
 \midrule
-\multicolumn{5}{l}{\textit{Job Openings ($\Delta\text{HWI}$, thsd/mo; 2026M8 Realized = 7,079k)}} \\
-COVID-Controlled VAR(2) & $-223.2$ & $[-293.0, -153.3]$ & $-59.2\%$ & $1.000$ \\
+\multicolumn{5}{l}{\textit{JOLTS Job Openings ($\Delta\text{HWI}$, thsd/mo; 2026M8 Realized = 7,079k)}} \\
+COVID-Controlled VAR(2) & $-214.3$ & $[-285.9, -142.6]$ & $-58.2\%$ & $1.000$ \\
+Cointegrated VECM($r=2$) & $-39.7$ & $[-110.3, +31.0]$ & $-20.5\%$ & $0.865$ \\
 Unscaled BVAR(2) [Diff] & $-207.4$ & $[-326.6, -99.6]$ & $-57.4\%$ & $0.998$ \\
 LP-BVAR(2) [Diff]       & $-138.1$ & $[-202.0, -78.8]$ & $-47.5\%$ & $1.000$ \\
 \textbf{LP-BVAR(3) [Levels]} & $\mathbf{-122.8}$ & $\mathbf{[-178.5, -66.3]}$ & $\mathbf{-44.3\%}$ & $\mathbf{1.000}$ \\
 \midrule
 \multicolumn{5}{l}{\textit{Total Payrolls ($\Delta\log\text{PAYEMS}$, \%/mo; 2026M8 Realized = 159,015k)}} \\
-COVID-Controlled VAR(2) & $-0.144$ & $[-0.182, -0.105]$ & $-6.4\%$ & $1.000$ \\
+COVID-Controlled VAR(2) & $-0.143$ & $[-0.179, -0.107]$ & $-6.4\%$ & $1.000$ \\
+Cointegrated VECM($r=2$) & $+0.012$ & $[-0.023, +0.046]$ & $+0.5\%$ & $0.253$ \\
 Unscaled BVAR(2) [Diff] & $-0.089$ & $[-0.342, +0.153]$ & $-3.6\%$ & $0.756$ \\
 LP-BVAR(2) [Diff]       & $-0.081$ & $[-0.117, -0.046]$ & $-3.6\%$ & $1.000$ \\
 \textbf{LP-BVAR(3) [Levels]} & $\mathbf{-0.085}$ & $\mathbf{[-0.147, -0.027]}$ & $\mathbf{-3.8\%}$ & $\mathbf{0.996}$ \\
 \bottomrule
 \end{tabular}
 \vskip 2pt
-{\scriptsize \textit{Notes}: Out-of-sample horizon $H=46$ (2022M11--2026M8) conditioned on realized $\mathcal{C}=\{\text{FEDFUNDS},\text{M2SL},\text{BAA10YM}\}$. Bayesian 95\% predictive intervals combine NIW parameter draws and exact Waggoner--Zha (1999) conditional shock draws ($M=500$). LP-BVAR hyperparameters are maximized via exact log marginal likelihood (Log Bayes Factor $= +414.1$ for COVID scaling). 2026 Gap reports relative level deviation at 2026M8.\par}
+{\scriptsize \textit{Notes}: Horizon $H=46$ (2022M11--2026M8) conditioned on realized $\mathcal{C}=\{\text{FEDFUNDS},\text{M2SL},\text{BAA10YM}\}$. Frequentist VAR(2)/VECM($r=2$) use 2020:03--2020:12 pulse dummies; Bayesian LP-BVAR uses Lenza--Primiceri (2022) exact marginal-likelihood volatility scaling (Log Bayes Factor $= +414.1$) with $M=500$ full Waggoner--Zha predictive draws.\par}
 \end{minipage}
 \end{table}

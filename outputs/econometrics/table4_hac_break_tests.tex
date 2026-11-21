@@ -1,25 +1,27 @@
 \begin{table}[t]
 \centering
-\caption{Newey--West HAC Structural Break Tests on Post-2022 Errors}
+\caption{Newey--West HAC Tests: COVID-Controlled VAR(2) \& VECM($r=2$)}
 \label{tab:hac_tests}
 \begin{minipage}{\columnwidth}
 \centering
-\fontsize{7.0pt}{8.4pt}\selectfont
-\setlength{\tabcolsep}{2.3pt}
+\fontsize{6.6pt}{8.0pt}\selectfont
+\setlength{\tabcolsep}{1.5pt}
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Target \& Regime} & $\bar{e}$ & \textbf{HAC SE} & $t$-\textbf{ratio} & $p$-\textbf{value} & \textbf{RMSE} \\
+\textbf{Target \& Model Regime} & $\bar{e}$ & \textbf{HAC SE} & $t$-\textbf{ratio} & $p$-\textbf{value} & \textbf{2026 Gap} \\
 \midrule
-\multicolumn{6}{l}{\textit{Job Openings (\texttt{HWI}, Thousands of Openings/Month)}} \\
-Unconditional VAR(2) & $-68.86$ & $28.73$ & $-2.40$ & $0.021$ & $339.69$ \\
-Policy-Conditioned & $\mathbf{-223.18}$ & $\mathbf{35.63}$ & $\mathbf{-6.26}$ & $\mathbf{1.27 \times 10^{-7}}$ & $414.62$ \\
+\multicolumn{6}{l}{\textit{JOLTS Job Openings (\texttt{HWI}, Thousands of Openings/Month)}} \\
+Unconditional VAR(2) & $-67.71$ & $29.04$ & $-2.33$ & $0.024$ & $-30.6\%$ \\
+Policy-Cond. VAR(2)  & $\mathbf{-214.27}$ & $\mathbf{36.56}$ & $\mathbf{-5.86}$ & $\mathbf{5.03 \times 10^{-7}}$ & $\mathbf{-58.2\%}$ \\
+Policy-Cond. VECM($r=2$) & $-39.68$ & $36.04$ & $-1.10$ & $0.277$ & $-20.5\%$ \\
 \midrule
 \multicolumn{6}{l}{\textit{Nonfarm Payrolls (\texttt{PAYEMS}, Monthly \% Growth)}} \\
-Unconditional VAR(2) & $-0.097$ & $0.014$ & $-6.78$ & $2.18 \times 10^{-8}$ & $0.121$ \\
-Policy-Conditioned & $\mathbf{-0.144}$ & $\mathbf{0.020}$ & $\mathbf{-7.28}$ & $\mathbf{3.87 \times 10^{-9}}$ & $0.171$ \\
+Unconditional VAR(2) & $-0.095$ & $0.013$ & $-7.27$ & $4.08 \times 10^{-9}$ & $-4.3\%$ \\
+Policy-Cond. VAR(2)  & $-0.143$ & $0.018$ & $-7.79$ & $7.02 \times 10^{-10}$ & $-6.4\%$ \\
+Policy-Cond. VECM($r=2$) & $\mathbf{+0.012}$ & $\mathbf{0.018}$ & $\mathbf{+0.67}$ & $\mathbf{0.509}$ & $\mathbf{+0.5\%}$ \\
 \bottomrule
 \end{tabular}
 \vskip 2pt
-{\scriptsize \textit{Notes}: COVID-controlled stationary VAR(2) (2020M3--2020M5 pulse dummies per Wei 2019, Sec.~2.7) evaluated over 2022M11--2026M8 ($H = 46$). Conditioning block $\mathcal{C} = \{\text{FEDFUNDS}, \text{M2SL}, \text{BAA10YM}\}$ via exact Waggoner--Zha (1999) projection. HAC SEs use Newey--West (1987) Bartlett kernel (bandwidth $b = 3$).\par}
+{\scriptsize \textit{Notes}: Frequentist VAR(2) and Case~3 VECM($r=2$) include 2020:03--2020:12 COVID pulse dummies, evaluated over 2022M11--2026M8 ($H=46$) conditioned on $\mathcal{C}=\{\text{FEDFUNDS},\text{M2SL},\text{BAA10YM}\}$ via Waggoner--Zha (1999) projection. HAC SEs use Newey--West (1987) Bartlett kernel ($b=3$).\par}
 \end{minipage}
 \end{table}

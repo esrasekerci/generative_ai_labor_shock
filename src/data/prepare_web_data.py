@@ -46,11 +46,11 @@ SERIES_META = [
     },
     {
         "id": "HWI",
-        "label": "Help-Wanted Index (Job Openings)",
+        "label": "JOLTS Total Nonfarm Job Openings (HWI / JTSJOL)",
         "shortLabel": "Job Openings (HWI)",
         "role": "Labor Demand / Vacancies (Target)",
         "block": "Labor Market Target",
-        "units": "Index / Thousands",
+        "units": "Thousands of Openings",
         "tcode": 2,
         "transformFormula": "Δ xₜ",
         "transformLabel": "Monthly first difference",
